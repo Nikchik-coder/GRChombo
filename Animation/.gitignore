@@ -3,3 +3,6 @@ gw_data/
 chi/
 K/
 lapse/
+
+# Virtual environment
+venv/
