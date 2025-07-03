@@ -9,7 +9,7 @@
 verbosity = 0
 
 # location / naming of output files
-# output_path = "" # Main path for all files. Must exist!
+output_path = "/home/nik/GRChombo_runs/BBH_very_cheap_run/"
 chk_prefix = BinaryBHChk_
 plot_prefix = BinaryBHPlot_
 # restart_file = BinaryBHChk_000360.3d.hdf5
