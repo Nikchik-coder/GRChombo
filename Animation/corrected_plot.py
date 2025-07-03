@@ -1,14 +1,3 @@
-#!/usr/bin/env python3
-"""
-Corrected plotter for Chombo binary black hole data
-"""
-
-import h5py
-import numpy as np
-import matplotlib.pyplot as plt
-import glob
-import os
-
 # corrected_plot.py
 # Fixed plotting script for GRChombo Binary Black Hole HDF5 files
 # Fixed data path and added more suitable fields for BH visualization
@@ -35,8 +24,8 @@ matplotlib.use("Agg")
 # Enable Parallelism
 yt.enable_parallelism()
 
-# FIXED: Correct data file location for the hdf5 folder in current directory
-data_location = "hdf5/BinaryBH_*.3d.hdf5"  # Data file location
+# FIXED: Correct data file location for the external data directory
+data_location = "/home/nik/GRChombo_runs/BBH_very_cheap_run/hdf5/BinaryBHChk_*.3d.hdf5"  # Data file location
 # Loading dataset
 ts = yt.load(data_location)
 
@@ -58,11 +47,19 @@ center[2] = 0  # Set z=0 for equatorial plane
 # Orthogonal Axis (plot z-slice through equatorial plane)
 axis = "z"
 
-# mkdir the plot directories
+# mkdir the plot directories (and optionally clean them)
 if yt.is_root():
     for name in variable_names:
         if not os.path.exists(name):
             os.mkdir(name)
+        else:
+            # Clean existing plots to avoid mixing data from different runs
+            import glob
+            old_plots = glob.glob(f"{name}/*.png")
+            if old_plots:
+                print(f"Cleaning {len(old_plots)} old plots from {name}/ directory")
+                for plot_file in old_plots:
+                    os.remove(plot_file)
 
 # Define a basic plot
 def produce_slice_plot(data, variable, axis = axis):
