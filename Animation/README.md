@@ -55,8 +55,12 @@ pip install yt h5py matplotlib numpy pillow imageio
 # Generate all field plots (81 timesteps × 3 fields = 243 plots)
 source venv/bin/activate && python corrected_plot.py
 
+source venv/bin/activate && mpirun -n 4 python corrected_plot.py
+
 # Create animations from generated plots
 source venv/bin/activate && python create_animation.py
+
+souce venv/bin/activate && mpirun -n 4 python create_animation.py
 
 # Analyze gravitational wave data
 source venv/bin/activate && python plot_gravitational_waves.py

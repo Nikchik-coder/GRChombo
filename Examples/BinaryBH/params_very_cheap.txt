@@ -9,7 +9,7 @@
 verbosity = 0
 
 # location / naming of output files
-output_path = "/home/nik/GRChombo_runs/BBH_very_cheap_run/"
+output_path = "/home/nik/GRChombo_runs/BBH_run_2"
 chk_prefix = BinaryBHChk_
 plot_prefix = BinaryBHPlot_
 # restart_file = BinaryBHChk_000360.3d.hdf5
@@ -124,7 +124,7 @@ nonzero_asymptotic_values = 1.0 1.0 1.0 1.0 1.0
 
 # dt will be dx*dt_multiplier on each grid level
 dt_multiplier = 0.25
-stop_time = 10.0
+stop_time = 30.0
 # max_steps = 100
 
 # Spatial derivative order (only affects CCZ4 RHS)
