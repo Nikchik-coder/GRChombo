@@ -60,10 +60,12 @@ source venv/bin/activate && mpirun -n 4 python corrected_plot.py
 # Create animations from generated plots
 source venv/bin/activate && python create_animation.py
 
-souce venv/bin/activate && mpirun -n 4 python create_animation.py
+source venv/bin/activate && mpirun -n 4 python create_animation.py
 
 # Analyze gravitational wave data
 source venv/bin/activate && python plot_gravitational_waves.py
+
+source venv/bin/activate && mpirun -n 4 python plot_gravitational_waves.py
 ```
 
 ### 3. View Results
