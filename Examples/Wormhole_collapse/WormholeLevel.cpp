@@ -93,13 +93,15 @@ void WormholeLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
     }
 }
 
-// THIS IS THE CORRECTED FUNCTION
 void WormholeLevel::computeTaggingCriterion(
     FArrayBox &tagging_criterion, const FArrayBox ¤t_state,
     const FArrayBox ¤t_state_diagnostics)
 {
-    // Tag based on the curvature of chi, expecting a collapse
-    BoxLoops::loop(ChiTaggingCriterion(m_dx), current_state, tagging_criterion);
+    // The ChiAndPhiTaggingCriterion is used here based on the likely
+    // physics of the wormhole collapse example.
+    BoxLoops::loop(ChiAndPhiTaggingCriterion(m_dx, m_level, m_p.regrid_thresholds,
+                                              m_p.activate_extraction),
+                   current_state, tagging_criterion);
 }
 
 // To do post each time step on every level

@@ -43,8 +43,8 @@ class WormholeLevel : public GRAMRLevel
 
     //! Tell Chombo how to tag cells for regridding
     virtual void computeTaggingCriterion(
-        FArrayBox &tagging_criterion, const FArrayBox &current_state,
-        const FArrayBox &current_state_diagnostics) override;
+        FArrayBox &tagging_criterion, const FArrayBox ¤t_state,
+        const FArrayBox ¤t_state_diagnostics) override;
 
     //! To do post each time step on every level
     virtual void specificPostTimeStep() override;
