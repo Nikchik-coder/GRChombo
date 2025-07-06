@@ -5,12 +5,9 @@
 
 // General includes common to most GR problems
 #include "WormholeLevel.hpp"
-#include "AMRReductions.hpp"
 #include "BoxLoops.hpp"
-#include "CustomExtraction.hpp"
 #include "NanCheck.hpp"
 #include "PositiveChiAndAlpha.hpp"
-#include "SixthOrderDerivatives.hpp"
 #include "TraceARemoval.hpp"
 
 // For RHS update
@@ -19,8 +16,8 @@
 // For constraints calculation
 #include "NewMatterConstraints.hpp"
 
-// For tag cells
-#include "FixedGridsTaggingCriterion.hpp"
+// For tag cells. Using Chi since we expect a collapse to BH.
+#include "ChiTaggingCriterion.hpp"
 
 // For gravitational wave extraction
 #include "Weyl4.hpp"
@@ -28,11 +25,8 @@
 
 // Problem specific includes
 #include "ComputePack.hpp"
-#include "GammaCalculator.hpp"
-#include "WormholeICs.hpp"
-#include "Potential.hpp"
-#include "ScalarField.hpp"
 #include "SetValue.hpp"
+#include "WormholeICs.hpp"
 
 // Things to do at each advance step, after the RK4 is calculated
 void WormholeLevel::specificAdvance()
@@ -57,76 +51,27 @@ void WormholeLevel::initialData()
     if (m_verbosity)
         pout() << "WormholeLevel::initialData " << m_level << endl;
     
-    // Instantiate your wormhole ICs class
+    // First set everything to zero
+    BoxLoops::loop(SetValue(0.), m_state_new, m_state_new, INCLUDE_GHOST_CELLS);
+    
+    // Then set the wormhole initial conditions
     WormholeICs wormhole_ICs(m_p.wormhole_params, m_dx);
-
-    // Set all variables on the grid
     BoxLoops::loop(wormhole_ICs, m_state_new, m_state_new, INCLUDE_GHOST_CELLS);
 }
 
-// Things to do when restarting from a checkpoint, including
-// restart from the initial condition solver output
-void WormholeLevel::postRestart()
-{
-    // On restart calculate the constraints on every level
-    fillAllGhosts();
-    Potential potential(m_p.potential_params);
-    WormholeWithPotential wormhole_with_potential(potential);
-    BoxLoops::loop(
-        MatterConstraints<WormholeWithPotential>(
-            wormhole_with_potential, m_dx, m_p.G_Newton, c_Ham, Interval(c_Mom1, c_Mom3)),
-        m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
-
-    // Use AMR Interpolator and do lineout data extraction
-    // pass the boundary params so that we can use symmetries
-    AMRInterpolator<Lagrange<2>> interpolator(
-        m_gr_amr, m_p.origin, m_p.dx, m_p.boundary_params, m_p.verbosity);
-
-    // this should fill all ghosts including the boundary ones according
-    // to the conditions set in params.txt
-    interpolator.refresh();
-
-    // restart works from level 0 to highest level, so want this to happen last
-    // on finest level
-    int write_out_level = m_p.max_level;    
-    if (m_level == write_out_level)
-    {
-        // AMRReductions for diagnostic variables
-        AMRReductions<VariableType::diagnostic> amr_reductions_diagnostic(
-            m_gr_amr);
-        double L2_Ham = amr_reductions_diagnostic.norm(c_Ham);
-        double L2_Mom = amr_reductions_diagnostic.norm(Interval(c_Mom1, c_Mom3));
-
-        // only on rank zero write out the result
-        if (procID() == 0)
-        {
-            pout() << "The initial norm of the constraint vars on restart is "
-                   << L2_Ham << " for the Hamiltonian constraint and " << L2_Mom
-                   << " for the momentum constraints" << endl;
-        }
-
-        // set up the query and execute it
-        int num_points = 3 * m_p.ivN[0];
-        CustomExtraction constraint_extraction(c_Ham, c_Mom, num_points, m_p.L,
-                                               m_p.center, m_dt, m_time);
-        constraint_extraction.execute_query(
-            &interpolator, m_p.data_path + "constraint_lineout");
-    }
-}
-
 #ifdef CH_USE_HDF5
-// Things to do before outputting a checkpoint file
+// Things to do before outputting a plot file
 void WormholeLevel::prePlotLevel()
 {
     fillAllGhosts();
     Potential potential(m_p.potential_params);
-    WormholeWithPotential wormhole_with_potential(potential);
+    ScalarFieldWithPotential scalar_field(potential);
     BoxLoops::loop(
-        MatterConstraints<WormholeWithPotential>(
-            wormhole_with_potential, m_dx, m_p.G_Newton, c_Ham, Interval(c_Mom1, c_Mom3)),
+        MatterConstraints<ScalarFieldWithPotential>(
+            scalar_field, m_dx, m_p.G_Newton, c_Ham, Interval(c_Mom1, c_Mom3)),
         m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
     
-    // Calculate Weyl4 scalar for gravitational wave extraction
+    // Calculate Weyl4 scalar for plotting
     if (m_p.activate_extraction)
     {
         BoxLoops::loop(
@@ -138,7 +83,7 @@ void WormholeLevel::prePlotLevel()
 
 // Things to do in RHS update, at each RK4 step
 void WormholeLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
-                                       const double a_time)
+                                     const double a_time)
 {
     // Enforce trace free A_ij and positive chi and alpha
     BoxLoops::loop(
@@ -148,54 +93,31 @@ void WormholeLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
 
     // Calculate MatterCCZ4 right hand side with matter_t = ScalarField
     Potential potential(m_p.potential_params);
-    WormholeWithPotential wormhole_with_potential(potential);
+    ScalarFieldWithPotential scalar_field(potential);
     if (m_p.max_spatial_derivative_order == 4)
     {
-        MatterCCZ4RHS<WormholeWithPotential, MovingPunctureGauge,
+        MatterCCZ4RHS<ScalarFieldWithPotential, MovingPunctureGauge,
                       FourthOrderDerivatives>
-            my_ccz4_matter(wormhole_with_potential, m_p.ccz4_params, m_dx, m_p.sigma,
+            my_ccz4_matter(scalar_field, m_p.ccz4_params, m_dx, m_p.sigma,
                            m_p.formulation, m_p.G_Newton);
         BoxLoops::loop(my_ccz4_matter, a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
     }
-    else if (m_p.max_spatial_derivative_order == 6)
-    {
-        MatterCCZ4RHS<WormholeWithPotential, MovingPunctureGauge,
-                      SixthOrderDerivatives>
-            my_ccz4_matter(wormhole_with_potential, m_p.ccz4_params, m_dx, m_p.sigma,
-                           m_p.formulation, m_p.G_Newton);
-        BoxLoops::loop(my_ccz4_matter, a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
-    }
+    // Add sixth order stencils if required
 }
 
-// Things to do at ODE update, after soln + rhs
-void WormholeLevel::specificUpdateODE(GRLevelData &a_soln,
-                                         const GRLevelData &a_rhs, Real a_dt)
-{
-    // Enforce trace free A_ij
-    BoxLoops::loop(TraceARemoval(), a_soln, a_soln, INCLUDE_GHOST_CELLS);
-}
-
-void WormholeLevel::preTagCells()
-{
-    // we don't need any ghosts filled for the fixed grids tagging criterion
-    // used here so don't fill any
-}
-
+// Tell Chombo how to tag cells for regridding
 void WormholeLevel::computeTaggingCriterion(
     FArrayBox &tagging_criterion, const FArrayBox &current_state,
     const FArrayBox &current_state_diagnostics)
 {
-    // If using symmetry of the box, adjust physical length
-    int symmetry = 1;
-    BoxLoops::loop(
-        FixedGridsTaggingCriterion(m_dx, m_level, m_p.L / symmetry, m_p.center),
-        current_state, tagging_criterion);
+    // Tag based on the curvature of chi, expecting a collapse
+    BoxLoops::loop(ChiTaggingCriterion(m_dx), current_state, tagging_criterion);
 }
 
+// To do post each time step on every level
 void WormholeLevel::specificPostTimeStep()
 {
     CH_TIME("WormholeLevel::specificPostTimeStep");
-
     bool first_step = (m_time == 0.);
 
     // Gravitational wave extraction
