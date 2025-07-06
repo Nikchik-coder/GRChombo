@@ -4,7 +4,13 @@ A complete analysis and visualization toolkit for binary black hole numerical re
 
 ## 🎯 Project Overview
 
-This project provides tools to visualize and analyze binary black hole merger simulations from GRChombo. It creates both individual plots and animated visualizations showing the evolution of key gravitational fields during the inspiral, merger, and ringdown phases.
+This project provides tools to visualize and analyze numerical relativity simulations from GRChombo. It creates both individual plots and animated visualizations showing the evolution of key gravitational fields. The toolkit supports:
+
+- **Binary Black Hole mergers**: Inspiral, merger, and ringdown phases
+- **Kerr Black Hole simulations**: Single rotating black hole spacetimes  
+- **General CCZ4 simulations**: All standard CCZ4 evolution variables
+
+The enhanced scripts automatically detect available fields and create appropriate visualizations for any GRChombo simulation.
 
 ## 📁 Project Structure
 
@@ -52,15 +58,20 @@ pip install yt h5py matplotlib numpy pillow imageio
 ### 2. Generate Plots and Animations
 
 ```bash
-# Generate all field plots (81 timesteps × 3 fields = 243 plots)
+# Generate plots for all available fields (auto-detected)
 source venv/bin/activate && python corrected_plot.py
 
+# OR run with MPI for parallel processing
 source venv/bin/activate && mpirun -n 4 python corrected_plot.py
 
-# Create animations from generated plots
-source venv/bin/activate && python create_animation.py
+# List available field directories after plotting
+source venv/bin/activate && python create_animation.py --list
 
-source venv/bin/activate && mpirun -n 4 python create_animation.py
+# Create animations for all available fields
+source venv/bin/activate && python create_animation.py all
+
+# OR create animation for specific field
+source venv/bin/activate && python create_animation.py chi
 
 # Analyze gravitational wave data
 source venv/bin/activate && python plot_gravitational_waves.py
@@ -121,73 +132,116 @@ Your visualization files will be created:
 
 ## 🛠️ Code Documentation
 
-### 1. `corrected_plot.py` - Main Plotting Script
+### 1. `corrected_plot.py` - Main Plotting Script (Enhanced)
 
 **Key Features:**
-- Fixed data path from `../../hdf5/` to `hdf5/`
-- Optimized field selection for binary BH physics
-- Proper colormap and scaling for each field
-- Time annotations on plots
-- Parallel processing support
+- **Auto-detection of available fields**: Automatically discovers all CCZ4 fields in simulation data
+- **Support for all CCZ4 variables**: chi, lapse, K, Ham, A11-A33, h11-h33, Gamma1-3, shift1-3, B1-3, Theta
+- **Intelligent field selection**: Prioritizes the most physically relevant fields
+- **Proper colormap and scaling** for each field type
+- **Error handling**: Continues plotting even if some fields are missing
+- **Time annotations** on plots
+- **Parallel processing support** with MPI
 
 **Usage:**
 ```bash
 source venv/bin/activate && python corrected_plot.py
 ```
 
-**Key fixes made:**
+**New Enhanced Features:**
 ```python
-# FIXED: Correct data path
-data_location = "hdf5/BinaryBH_*.3d.hdf5"  # Was: "../../hdf5/*.3d.hdf5"
+# AUTO-DETECTION: Checks what fields are available in the dataset
+available_fields = [field[1] for field in ts[0].field_list if field[0] == 'chombo']
+print("Available fields:", available_fields)
 
-# FIXED: API compatibility  
-slc.set_width(10)  # Was: slc.set_window_size(10)
+# INTELLIGENT SELECTION: Prioritizes best fields for visualization
+potential_fields = ["chi", "lapse", "K", "Ham", "h11", "h22", "h33", 
+                   "A11", "A22", "A33", "Gamma1", "Gamma2", "Gamma3", 
+                   "shift1", "shift2", "shift3"]
 
-# ENHANCED: Better field selection
-variable_names = ["chi", "lapse", "K"]  # Was: ["chi"]
+# FIELD-SPECIFIC VISUALIZATION: Appropriate settings for each field type
+if variable.startswith("A"):
+    slc.set_cmap(field=variable, cmap="RdBu_r")  # Extrinsic curvature
+elif variable.startswith("h"):
+    slc.set_cmap(field=variable, cmap="viridis")  # Metric components
+elif variable.startswith("Gamma"):
+    slc.set_cmap(field=variable, cmap="RdBu_r")  # Connection coefficients
+elif variable.startswith("shift"):
+    slc.set_cmap(field=variable, cmap="RdBu_r")  # Shift vector
+elif variable == "Ham":
+    slc.set_cmap(field=variable, cmap="RdBu_r")  # Hamiltonian constraint
 
-# ENHANCED: Field-specific visualization settings
-if variable == "chi":
-    slc.set_log(variable, False)
-    slc.set_cmap(field=variable, cmap="viridis")
-    slc.set_zlim(variable, 0.0, 1.0)
-elif variable == "lapse":
-    slc.set_log(variable, False) 
-    slc.set_cmap(field=variable, cmap="plasma")
-    slc.set_zlim(variable, 0.0, 1.0)
-elif variable == "K":
-    slc.set_log(variable, False)
-    slc.set_cmap(field=variable, cmap="RdBu_r")
+# ERROR HANDLING: Gracefully handles missing fields
+try:
+    produce_slice_plot(i, name)
+except Exception as e:
+    print(f"Error plotting {name}: {e}")
 ```
 
-### 2. `create_animation.py` - Animation Generator
+### 2. `create_animation.py` - Animation Generator (Enhanced)
 
 **Features:**
-- Creates GIF animations from PNG sequences
-- Customizable frame duration
-- Command-line interface
-- Sample plot viewing
-- Automatic processing of all available fields
+- **Auto-detection of available fields**: Automatically finds all directories containing PNG files
+- **Support for all CCZ4 fields**: Works with chi, lapse, K, Ham, A11, A12, h11, Gamma1, Theta, shift1, etc.
+- **Multiple usage modes**: Create single animations, all animations, or list available fields
+- **Flexible command-line interface** with enhanced options
+- **Sample plot viewing** for any available field
+- **Smart field discovery**: No longer hardcoded to specific fields
 
 **Usage:**
 ```bash
-# Create all animations
-python create_animation.py
+# List available field directories
+python create_animation.py --list
 
-# Create specific field animation
+# Create animations for all available fields
+python create_animation.py all
+
+# Create animation for specific field
 python create_animation.py chi --duration 0.3 --output custom_chi.gif
 
-# View sample plot
-python create_animation.py lapse --show --timestep 40
+# View sample plot (any available field)
+python create_animation.py A11 --show --timestep 40
+
+# Run without arguments to see available fields and create all animations
+python create_animation.py
 ```
 
-**Key functions:**
+**New Enhanced Functions:**
 ```python
+def get_available_fields():
+    """Auto-detect all directories with PNG files"""
+    
+def create_all_animations(duration=0.2):
+    """Create animations for all available field directories"""
+    
+def list_available_fields():
+    """List all available field directories and their contents"""
+    
 def create_animation(field_name, output_filename=None, duration=0.2):
     """Create GIF animation from PNG files"""
     
 def show_sample_plot(field_name, timestep=0):
-    """Display a sample plot"""
+    """Display a sample plot for any field"""
+```
+
+**Command-line Options:**
+- `--list, -l`: List available field directories
+- `--show, -s`: Show sample plot instead of creating animation
+- `--duration, -d`: Set frame duration (default: 0.2s)
+- `--timestep, -t`: Which timestep to show (for --show option)
+- `--output, -o`: Custom output filename
+
+**Examples:**
+```bash
+# For GRChombo CCZ4 simulations with fields like:
+# chi, lapse, K, Ham, A11, A12, A13, A22, A23, A33
+# h11, h12, h13, h22, h23, h33, Gamma1, Gamma2, Gamma3
+# shift1, shift2, shift3, B1, B2, B3, Theta
+
+python create_animation.py chi      # Create chi animation
+python create_animation.py Ham      # Create Hamiltonian constraint animation  
+python create_animation.py A11      # Create A11 component animation
+python create_animation.py all      # Create all available animations
 ```
 
 ### 3. `plot.py` - Original Script (Fixed)

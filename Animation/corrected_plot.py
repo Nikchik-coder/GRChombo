@@ -25,16 +25,37 @@ matplotlib.use("Agg")
 yt.enable_parallelism()
 
 # FIXED: Correct data file location for the external data directory
-data_location = "/home/nik/GRChombo_runs/BBH_run_2/hdf5/BinaryBHChk_*.3d.hdf5"  # Data file location
+data_location = "/home/nik/GRChombo_runs/KerrBH/hdf5/KerrBH*.3d.hdf5"  # Data file location
 # Loading dataset
 ts = yt.load(data_location)
 
-# Choose what fields you want to plot
-# Common fields for binary black hole simulations:
-# "chi" - conformal factor (shows spacetime structure)
-# "lapse" - lapse function (shows time dilation)  
-# "K" - trace of extrinsic curvature
-variable_names = ["chi", "lapse", "K"]
+# Check what fields are available in the dataset
+if yt.is_root():
+    print("Available fields in the dataset:")
+    available_fields = [field[1] for field in ts[0].field_list if field[0] == 'chombo']
+    for field in available_fields:
+        print(f"  - {field}")
+    print()
+
+# Choose fields that are likely to be available
+# Start with common CCZ4 fields and check availability
+potential_fields = ["chi", "lapse", "K", "Ham", "h11", "h22", "h33", "A11", "A22", "A33", "Gamma1", "Gamma2", "Gamma3", "shift1", "shift2", "shift3"]
+
+# Filter to only include fields that actually exist
+variable_names = []
+available_fields = [field[1] for field in ts[0].field_list if field[0] == 'chombo']
+
+for field in potential_fields:
+    if field in available_fields:
+        variable_names.append(field)
+
+# If we don't have enough fields, just use the first few available ones
+if len(variable_names) < 3:
+    variable_names = available_fields[:min(3, len(available_fields))]
+
+if yt.is_root():
+    print(f"Selected fields for plotting: {variable_names}")
+    print()
 
 # Choose the center of the plot
 # "c" ... center of the box
@@ -78,6 +99,26 @@ def produce_slice_plot(data, variable, axis = axis):
         slc.set_log(variable, False)
         slc.set_cmap(field=variable, cmap="RdBu_r")
         # K can be positive or negative, use symmetric scale
+    elif variable == "Ham":
+        slc.set_log(variable, False)
+        slc.set_cmap(field=variable, cmap="RdBu_r")
+        # Hamiltonian constraint can be positive or negative
+    elif variable.startswith("h"):
+        slc.set_log(variable, False)
+        slc.set_cmap(field=variable, cmap="viridis")
+        # Metric components
+    elif variable.startswith("A"):
+        slc.set_log(variable, False)
+        slc.set_cmap(field=variable, cmap="RdBu_r")
+        # Extrinsic curvature components can be positive or negative
+    elif variable.startswith("Gamma"):
+        slc.set_log(variable, False)
+        slc.set_cmap(field=variable, cmap="RdBu_r")
+        # Connection coefficients can be positive or negative
+    elif variable.startswith("shift"):
+        slc.set_log(variable, False)
+        slc.set_cmap(field=variable, cmap="RdBu_r")
+        # Shift vector components can be positive or negative
     else:
         slc.set_log(variable, False)
         slc.set_cmap(field=variable, cmap="dusk")
@@ -114,12 +155,20 @@ if hasattr(ts,'piter'):
     # CASE FOR MULTIPLE DATASETS (PARALLEL)
     for i in ts.piter():
         for name in variable_names:
-            produce_slice_plot(i, name)
+            try:
+                produce_slice_plot(i, name)
+            except Exception as e:
+                if yt.is_root():
+                    print(f"Error plotting {name}: {e}")
 else:
     # CASE FOR SINGLE DATASET (NOT PARALLEL)
     if yt.is_root():
         for name in variable_names:
-            produce_slice_plot(ts, name)
+            try:
+                produce_slice_plot(ts, name)
+            except Exception as e:
+                print(f"Error plotting {name}: {e}")
 
-print(f"Plotting completed! Generated plots for {len(variable_names)} variables across {len(ts)} timesteps")
-print(f"Available fields in simulation: {[field[1] for field in ts[0].field_list]}") 
+if yt.is_root():
+    print(f"Plotting completed! Generated plots for {len(variable_names)} variables across {len(ts)} timesteps")
+    print(f"All available fields in simulation: {available_fields}") 
