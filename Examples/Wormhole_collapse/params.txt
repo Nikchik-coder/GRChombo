@@ -4,7 +4,7 @@
 #################################################
 # Filesystem parameters
 verbosity = 1
-# output_path = "" # Main path for all files. Must exist!
+output_path = "/home/nik/GRChombo_runs/Wormhole_Collapse"
 chk_prefix = Wormhole_
 plot_prefix = WormholePlot_
 # restart_file = Wormhole_000000.3d.hdf5
@@ -53,7 +53,7 @@ nonzero_asymptotic_values = 1.0 1.0 1.0 1.0 1.0
 #################################################
 # Evolution parameters
 dt_multiplier = 0.25
-stop_time = 100.0
+stop_time = 50.0
 max_spatial_derivative_order = 4
 nan_check = 1
 

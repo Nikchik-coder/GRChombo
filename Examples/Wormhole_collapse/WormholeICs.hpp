@@ -84,7 +84,19 @@ void WormholeICs::compute(Cell<data_t> current_cell) const
     data_t g_yz = (g_rr_spher - 1.0) * ny * nz;
 
     // Calculate the determinant of the spatial metric
-    data_t det_gamma = TensorAlgebra::compute_determinant(g_xx, g_xy, g_xz, g_yy, g_yz, g_zz);
+    // Create a tensor from the individual components
+    Tensor<2, data_t, 3> gamma_tensor;
+    gamma_tensor[0][0] = g_xx;
+    gamma_tensor[0][1] = g_xy;
+    gamma_tensor[0][2] = g_xz;
+    gamma_tensor[1][0] = g_xy;
+    gamma_tensor[1][1] = g_yy;
+    gamma_tensor[1][2] = g_yz;
+    gamma_tensor[2][0] = g_xz;
+    gamma_tensor[2][1] = g_yz;
+    gamma_tensor[2][2] = g_zz;
+    
+    data_t det_gamma = TensorAlgebra::compute_determinant(gamma_tensor);
     det_gamma = simd_max(det_gamma, 1e-12); // Ensure determinant is positive
 
     // The conformal factor chi and the conformal metric h_ij
