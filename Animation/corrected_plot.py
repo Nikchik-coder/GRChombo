@@ -25,7 +25,7 @@ matplotlib.use("Agg")
 yt.enable_parallelism()
 
 # FIXED: Correct data file location for the external data directory
-data_location = "/home/nik/GRChombo_runs/KerrBH/hdf5/KerrBH*.3d.hdf5"  # Data file location
+data_location = "/home/nik/GRChombo_runs/Wormhole_Collapse/hdf5/Wormhole_*.3d.hdf5"  # Data file location
 # Loading dataset
 ts = yt.load(data_location)
 
