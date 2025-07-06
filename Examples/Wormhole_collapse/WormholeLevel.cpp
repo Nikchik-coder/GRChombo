@@ -18,6 +18,7 @@
 #include "Weyl4.hpp"
 #include "WeylExtraction.hpp"
 #include "WormholeICs.hpp"
+#include "ChiAndPhiTaggingCriterion.hpp" // <-- ADD THIS LINE
 
 // Things to do at each advance step, after the RK4 is calculated
 void WormholeLevel::specificAdvance()
@@ -94,13 +95,13 @@ void WormholeLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
 }
 
 void WormholeLevel::computeTaggingCriterion(
-    FArrayBox &tagging_criterion, const FArrayBox ¤t_state,
-    const FArrayBox ¤t_state_diagnostics)
+    FArrayBox &tagging_criterion, const FArrayBox &current_state,
+    const FArrayBox &current_state_diagnostics)
 {
     // The ChiAndPhiTaggingCriterion is used here based on the likely
     // physics of the wormhole collapse example.
-    BoxLoops::loop(ChiAndPhiTaggingCriterion(m_dx, m_level, m_p.regrid_thresholds,
-                                              m_p.activate_extraction),
+    BoxLoops::loop(ChiAndPhiTaggingCriterion(m_dx, m_p.regrid_thresholds[m_level],
+                                              m_p.regrid_thresholds[m_level]),
                    current_state, tagging_criterion);
 }
 

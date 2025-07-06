@@ -54,7 +54,7 @@ nonzero_asymptotic_values = 1.0
 #################################################
 # Evolution parameters
 dt_multiplier = 0.2
-stop_time = 100.0
+stop_time = 20.0
 max_spatial_derivative_order = 4
 nan_check = 1
 
