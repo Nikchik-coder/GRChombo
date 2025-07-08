@@ -28,3 +28,8 @@ make all-tp -j 4 TWOPUNCTURES_SOURCE=/path/to/TwoPunctures/Source
 Note that the parameter names for TwoPunctures initial data differ to that of
 the vanilla example: see [params_two_punctures.txt](./params_two_punctures.txt)
 for the parameter names.
+
+
+mpirun -np 1 ./Main_Wormhole3d.Linux.64.mpicxx.gfortran.OPTHIGH.MPI.OPENMPCC.ex params.txt
+
+mpirun -np 1 ./Main_Wormhole3d.Linux.64.mpicxx.gfortran.OPTHIGH.MPI.OPENMPCC.ex params_very_cheap.txt
