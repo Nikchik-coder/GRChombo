@@ -3,13 +3,13 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#include "KerrBHLevel.hpp"
+#include "WormholeLevel.hpp"
+#include "Wormhole_collapse.hpp"
 #include "BoxLoops.hpp"
 #include "CCZ4RHS.hpp"
 #include "ChiTaggingCriterion.hpp"
 #include "ComputePack.hpp"
 #include "IntegratedMovingPunctureGauge.hpp"
-#include "KerrBHLevel.hpp"
 #include "NanCheck.hpp"
 #include "NewConstraints.hpp"
 #include "PositiveChiAndAlpha.hpp"
@@ -21,7 +21,7 @@
 #include "GammaCalculator.hpp"
 #include "KerrBH.hpp"
 
-void KerrBHLevel::specificAdvance()
+void WormholeLevel::specificAdvance()
 {
     // Enforce the trace free A_ij condition and positive chi and alpha
     BoxLoops::loop(make_compute_pack(TraceARemoval(), PositiveChiAndAlpha()),
@@ -34,17 +34,17 @@ void KerrBHLevel::specificAdvance()
             m_state_new, m_state_new, EXCLUDE_GHOST_CELLS, disable_simd());
 }
 
-void KerrBHLevel::initialData()
+void WormholeLevel::initialData()
 {
-    CH_TIME("KerrBHLevel::initialData");
+    CH_TIME("WormholeLevel::initialData");
     if (m_verbosity)
-        pout() << "KerrBHLevel::initialData " << m_level << endl;
+        pout() << "WormholeLevel::initialData " << m_level << endl;
 
     // First set everything to zero then calculate initial data  Get the Kerr
     // solution in the variables, then calculate the \tilde\Gamma^i numerically
     // as these are non zero and not calculated in the Kerr ICs
     BoxLoops::loop(
-        make_compute_pack(SetValue(0.), KerrBH(m_p.kerr_params, m_dx)),
+        make_compute_pack(SetValue(0.), Wormhole_collapse(m_p.wormhole_params, m_dx)),
         m_state_new, m_state_new, INCLUDE_GHOST_CELLS);
 
     fillAllGhosts();

@@ -3,16 +3,16 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#ifndef KERRBHLEVEL_HPP_
-#define KERRBHLEVEL_HPP_
+#ifndef WORMHOLE_COLLAPSE_LEVEL_HPP_
+#define WORMHOLE_COLLAPSE_LEVEL_HPP_
 
 #include "BHAMR.hpp"
 #include "DefaultLevelFactory.hpp"
 #include "GRAMRLevel.hpp"
 
-class KerrBHLevel : public GRAMRLevel
+class WormholeLevel : public GRAMRLevel
 {
-    friend class DefaultLevelFactory<KerrBHLevel>;
+    friend class DefaultLevelFactory<WormholeLevel>;
     // Inherit the contructors from GRAMRLevel
     using GRAMRLevel::GRAMRLevel;
 
@@ -49,4 +49,4 @@ class KerrBHLevel : public GRAMRLevel
     virtual void specificPostTimeStep() override;
 };
 
-#endif /* KERRBHLEVEL_HPP_ */
+#endif /* WORMHOLE_COLLAPSE_LEVEL_HPP_ */
