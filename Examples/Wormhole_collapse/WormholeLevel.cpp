@@ -19,7 +19,7 @@
 
 // Initial data
 #include "GammaCalculator.hpp"
-#include "Constraints.hpp"
+
 
 void WormholeLevel::specificAdvance()
 {
