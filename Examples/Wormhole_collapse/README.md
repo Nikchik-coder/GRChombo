@@ -151,6 +151,34 @@ export EXEC_NAME=Main_Wormhole_collapse3d.Linux.64.mpicxx.gfortran.OPTHIGH.MPI.O
 
 # 4. Run simulation
 mpirun -np 1 ./$EXEC_NAME params_cheap.txt
+
+
+### Check Output Files
+
+**Open another terminal** to monitor the creation of output files while the simulation runs:
+
+```bash
+# Navigate to your output directory
+cd /home/nik/GRChombo_runs/BBH_run_1/
+
+# Check for output files
+ls -la
+
+# Monitor the pout directory for processor output
+ls -la pout/
+
+# Follow the live simulation output (most useful)
+tail -f pout/pout.0
+
+# Watch for new files being created (optional)
+watch -n 5 'ls -la'
+```
+
+You should see:
+- `pout/` directory with processor output files (`pout.0`, `pout.1`, etc.)
+- Plot files (`.hdf5` files) and checkpoint files as the simulation progresses
+- Various diagnostic output files
+
 ```
 
 mpirun -np 1 ./Main_Wormhole_collapse3d.Linux.64.mpicxx.gfortran.OPTHIGH.MPI.OPENMPCC.ex params.txt
