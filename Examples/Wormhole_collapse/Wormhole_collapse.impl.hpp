@@ -80,7 +80,8 @@ void Wormhole_collapse::compute_wormhole(Tensor<2, data_t> &spherical_g,
     // Calculate sin_theta^2 manually
     data_t rho_sq = coords.x * coords.x + coords.y * coords.y;
     data_t sin_theta_sq = rho_sq / r_sq;
-    sin_theta_sq = simd_conditional(r_sq > simd<double>(1e-12), sin_theta_sq, 0.0);
+    auto r_sq_is_large = simd_compare_gt(r_sq, data_t(1e-12));
+    sin_theta_sq = simd_conditional(r_sq_is_large, sin_theta_sq, data_t(0.0));
 
     // The metric components in spherical coordinates (r, theta, phi)
     FOR(i, j) { spherical_g[i][j] = 0.0; }

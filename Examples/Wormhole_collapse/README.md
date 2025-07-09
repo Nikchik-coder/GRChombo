@@ -1,6 +1,6 @@
-# KerrBH Example - Build and Run Guide
+# Wormhole_collapse Example - Build and Run Guide
 
-This directory contains the KerrBH example for GRChombo, which simulates a Kerr black hole spacetime.
+This directory contains the Wormhole_collapse example for GRChombo, which simulates the collapse of a traversable wormhole spacetime.
 
 ## Prerequisites
 
@@ -25,12 +25,12 @@ export CHOMBO_HOME=/home/nik/Chombo/Chombo/lib
 ### 2. Build the Executable
 
 ```bash
-make Main_KerrBH
+make Main_Wormhole_collapse
 ```
 
 This will create an executable with a name like:
 ```
-Main_KerrBH3d.Linux.64.mpicxx.gfortran.OPTHIGH.MPI.OPENMPCC.ex
+Main_Wormhole_collapse3d.Linux.64.mpicxx.gfortran.OPTHIGH.MPI.OPENMPCC.ex
 ```
 
 The exact name depends on your system configuration and compiler settings.
@@ -39,7 +39,7 @@ The exact name depends on your system configuration and compiler settings.
 
 Check that the executable was created:
 ```bash
-ls -la Main_KerrBH*.ex
+ls -la Main_Wormhole_collapse*.ex
 ```
 
 ## Running the Simulation
@@ -53,7 +53,7 @@ This example provides two parameter files:
 ### Run Command
 
 ```bash
-export EXEC_NAME=Main_KerrBH3d.Linux.64.mpicxx.gfortran.OPTHIGH.MPI.OPENMPCC.ex
+export EXEC_NAME=Main_Wormhole_collapse3d.Linux.64.mpicxx.gfortran.OPTHIGH.MPI.OPENMPCC.ex
 mpirun -np 1 ./$EXEC_NAME params_cheap.txt
 ```
 
@@ -71,7 +71,7 @@ mpirun -np 4 ./$EXEC_NAME params_cheap.txt
 
 **Solution**: Set the `EXEC_NAME` variable to the full executable name:
 ```bash
-export EXEC_NAME=Main_KerrBH3d.Linux.64.mpicxx.gfortran.OPTHIGH.MPI.OPENMPCC.ex
+export EXEC_NAME=Main_Wormhole_collapse3d.Linux.64.mpicxx.gfortran.OPTHIGH.MPI.OPENMPCC.ex
 ```
 
 ### Issue 2: "No such file or directory" for Make.test
@@ -84,19 +84,47 @@ export CHOMBO_HOME=/path/to/correct/chombo/lib
 ```
 
 ### Issue 3: Parameter file not found
-**Problem**: Trying to use `params_very_cheap.txt` which doesn't exist for this example.
+**Problem**: Trying to use a parameter file that doesn't exist.
 
 **Solution**: Use one of the available parameter files:
 - `params_cheap.txt` for quick testing
 - `params.txt` for full simulation
 
+### Issue 4: Compilation errors
+**Problem**: Missing includes or incorrect header guards.
+
+**Solution**: Ensure all source files are properly configured:
+- `SimulationParameters.hpp` should exist (renamed from `WormholeSimParams.hpp`)
+- Include paths in `GNUmakefile` should include `BlackHoles` directory
+- Header guards should match between `.hpp` and `.impl.hpp` files
+
+## Physical Description
+
+This example simulates a traversable wormhole that collapses over time. The initial data consists of:
+
+- **Wormhole throat**: Characterized by the throat radius parameter `b0`
+- **Shape function**: b(r) = b₀²/r for r > b₀
+- **Redshift function**: Constant redshift Φ₀ affecting the lapse function
+- **Time-symmetric slice**: Initial extrinsic curvature set to zero
+
+Key parameters that can be adjusted:
+- `throat_radius` - The initial radius of the wormhole throat
+- `redshift_constant` - Controls the lapse function via α = exp(Φ₀)
+
 ## Output
 
 The simulation will create several output directories:
 - `d/` - Contains diagnostic data
-- `f/` - Contains field data
+- `f/` - Contains field data  
 - `o/` - Contains object files from compilation
 - `p/` - Contains plot files
+
+Output data includes:
+- Metric components (h_ij)
+- Extrinsic curvature (A_ij) 
+- Conformal factor (chi)
+- Lapse function (alpha)
+- Shift vector (beta_i)
 
 ## Parameter File Modification
 
@@ -104,7 +132,8 @@ You can modify the parameter files to adjust:
 - Grid resolution
 - Simulation time
 - Output frequency
-- Black hole parameters (mass, spin, etc.)
+- Wormhole parameters (throat radius, redshift constant)
+- Grid center location
 
 Refer to the GRChombo documentation for detailed parameter descriptions.
 
@@ -115,18 +144,22 @@ Refer to the GRChombo documentation for detailed parameter descriptions.
 export CHOMBO_HOME=/home/nik/Chombo/Chombo/lib
 
 # 2. Build
-make Main_KerrBH
+make Main_Wormhole_collapse
 
-# 3. Set executable name
-export EXEC_NAME=Main_KerrBH3d.Linux.64.mpicxx.gfortran.OPTHIGH.MPI.OPENMPCC.ex
+# 3. Set executable name  
+export EXEC_NAME=Main_Wormhole_collapse3d.Linux.64.mpicxx.gfortran.OPTHIGH.MPI.OPENMPCC.ex
 
 # 4. Run simulation
 mpirun -np 1 ./$EXEC_NAME params_cheap.txt
 ```
+
+mpirun -np 1 ./Main_Wormhole_collapse3d.Linux.64.mpicxx.gfortran.OPTHIGH.MPI.OPENMPCC.ex params.txt
 
 ## Notes
 
 - The executable name will vary depending on your system configuration
 - Use `params_cheap.txt` for initial testing to ensure everything works
 - The simulation will create output files in the current directory
-- Monitor the output for any error messages or warnings 
+- Monitor the output for any error messages or warnings
+- This example demonstrates the collapse of a traversable wormhole, which typically occurs on dynamical timescales
+- The simulation uses the CCZ4 formulation of Einstein's equations with moving puncture gauge conditions 

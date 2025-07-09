@@ -18,6 +18,18 @@ of arbitrary shape and topology.
 Please visit www.grchombo.org for the full list of developers and their
 institutions, a list of publications using GRChombo, and some videos.
 
+## Examples
+
+GRChombo includes several working examples to help you get started with different types of simulations:
+
+- **BinaryBH** - Binary black hole merger simulations
+- **KerrBH** - Single Kerr black hole evolution  
+- **ScalarFieldBH** - Black holes with scalar field matter
+- **ScalarFieldCosmo** - Cosmological scalar field simulations
+- **Wormhole_collapse** - Traversable wormhole collapse dynamics
+
+Each example includes parameter files for both quick testing (`params_cheap.txt`) and full simulations (`params.txt`), along with detailed README files explaining the physics and build process.
+
 ## Getting started
 Detailed installation instructions and usage examples are available in
 our [wiki](https://github.com/GRChombo/GRChombo/wiki), with the home page giving guidance on where to start.

@@ -215,11 +215,11 @@ EXEC_NAME=$(ls Main_BinaryBH*.ex) && mpirun -np 1 ./$EXEC_NAME params_very_cheap
 EXEC_NAME=$(ls Main_BinaryBH*.ex)
 
 # Then run the simulation (choose one)
-mpirun -np 4 ./$EXEC_NAME params.txt          # Full simulation
+mpirun -np 1 ./$EXEC_NAME params.txt          # Full simulation
 mpirun -np 1 ./$EXEC_NAME params_very_cheap.txt  # Quick test
 
 
-mpirun -np 1 ./Main_Wormhole3d.Linux.64.mpicxx.gfortran.OPTHIGH.MPI.OPENMPCC.ex params.txt
+mpirun -np 1 ./Main_Wormhole_collapse3d.Linux.64.mpicxx.gfortran.OPTHIGH.MPI.OPENMPCC.ex params.txt
 ```
 
 ## Verification

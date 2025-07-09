@@ -7,10 +7,10 @@
 verbosity = 0
 
 # location / naming of output files
-output_path = "/home/nik/GRChombo_runs/KerrBH"
-chk_prefix = KerrBH_
-plot_prefix = KerrBHp_
-# restart_file = KerrBH_000060.3d.hdf5
+output_path = "/home/nik/GRChombo_runs/Wormhole_Collapse"
+chk_prefix = Wormhole_
+plot_prefix = Wormhole_p_
+# restart_file = Wormhole_000060.3d.hdf5
 
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
 checkpoint_interval = 1
@@ -36,10 +36,9 @@ print_progress_only_to_rank_0 = 1
 #################################################
 # Initial Data parameters
 
-kerr_mass = 1.0
-kerr_spin = 0.5
-kerr_spin_direction = 0.1 0.1 0. # doesn't need to be normalized
-# kerr_center = 64 64 64 # defauts to center
+throat_radius = 1.0
+redshift_constant = 0.0
+# wormhole_center = 64 64 64 # defaults to center
 
 #################################################
 # Grid parameters
@@ -51,18 +50,18 @@ kerr_spin_direction = 0.1 0.1 0. # doesn't need to be normalized
 # NB - if you have a non-cubic grid, you can specify 'N1' or 'N1_full',
 # 'N2' or 'N2_full' and 'N3' or 'N3_full' ( then dx_coarsest = L/N(max) )
 # NB - the N values need to be multiples of the block_factor
-N_full = 64
-L_full = 128
+N_full = 32
+L_full = 32
 
 # Maximum number of times you can regrid above coarsest level
-max_level = 4 # There are (max_level+1) grids, so min is zero
+max_level = 2 # There are (max_level+1) grids, so min is zero
 
 # Frequency of regridding at each level and thresholds on the tagging
 # Need one for each level except the top one, ie max_level items
 # Generally you do not need to regrid frequently on every level
-# Level Regridding:   0   1   2   3   4
-regrid_interval   =  50  25   5   5   5
-regrid_thresholds = 0.3 0.3 0.3 0.3 0.3
+# Level Regridding:   0   1   2
+regrid_interval   =  50  25   5
+regrid_thresholds = 0.3 0.3 0.3
 
 # Max and min box sizes
 max_box_size = 16
@@ -112,9 +111,9 @@ nonzero_asymptotic_values = 1.0 1.0 1.0 1.0 1.0
 # Evolution parameters
 
 # dt will be dx*dt_multiplier on each grid level
-dt_multiplier = 0.25
-stop_time = 20.0
-max_steps = 4
+dt_multiplier = 0.1
+stop_time = 5.0
+max_steps = 10
 
 # Spatial derivative order (only affects CCZ4 RHS)
 max_spatial_derivative_order = 4 # can be 4 or 6
@@ -170,8 +169,8 @@ AH_predict_origin = false
 
 # AH_look_for_chi_contour = 0.2
 
-AH_num_extra_vars = 2
-AH_extra_vars = chi d1_Ham
+AH_num_extra_vars = 1
+AH_extra_vars = chi
 
 # AH_coords_subpath = "data/coords"
 # AH_stats_prefix = "stats_AH"
