@@ -6,11 +6,12 @@
 #ifndef SIMULATIONPARAMETERS_HPP_
 #define SIMULATIONPARAMETERS_HPP_
 
+// General includes
 #include "GRParmParse.hpp"
 #include "SimulationParametersBase.hpp"
-#include "Potential.hpp"
-#include "WormholeICs.hpp"
-#include "SphericalExtraction.hpp"
+
+// Problem specific includes:
+#include "KerrBH.hpp"
 
 class SimulationParameters : public SimulationParametersBase
 {
@@ -21,57 +22,44 @@ class SimulationParameters : public SimulationParametersBase
         check_params();
     }
 
+    /// Read parameters from the parameter file
     void read_params(GRParmParse &pp)
     {
-        // Initial data for a Gaussian pulse in chi
-        pp.load("amplitude", wormhole_params.amplitude, 0.1);
-        pp.load("width", wormhole_params.width, 1.0);
-        wormhole_params.center = center;
+        // Initial Kerr data
+        pp.load("kerr_mass", kerr_params.mass);
+        pp.load("kerr_spin", kerr_params.spin);
+        pp.load("kerr_center", kerr_params.center, center);
+        pp.load("kerr_spin_direction", kerr_params.spin_direction,
+                {0., 0., 1.});
 
-        // Scalar field potential params
-        pp.load("scalar_mass", potential_params.scalar_mass, 0.2);
-        // Add G_Newton back
-        pp.load("G_Newton", G_Newton, 1.0);
+#ifdef USE_AHFINDER
+        pp.load("AH_initial_guess", AH_initial_guess, 0.5 * kerr_params.mass);
+#endif
+    }
 
-        // Gravitational wave extraction parameters
-        pp.load("activate_extraction", activate_extraction, false);
-        if (activate_extraction)
+    void check_params()
+    {
+        warn_parameter("kerr_mass", kerr_params.mass, kerr_params.mass >= 0.0,
+                       "should be >= 0.0");
+        check_parameter("kerr_spin", kerr_params.spin,
+                        std::abs(kerr_params.spin) <= kerr_params.mass,
+                        "must satisfy |a| <= M = " +
+                            std::to_string(kerr_params.mass));
+        FOR(idir)
         {
-            pp.load("num_extraction_radii", extraction_params.num_extraction_radii, 0);
-            if (extraction_params.num_extraction_radii > 0)
-            {
-                pp.load("extraction_radii", extraction_params.extraction_radii, extraction_params.num_extraction_radii);
-                pp.load("extraction_levels", extraction_params.extraction_levels, extraction_params.num_extraction_radii);
-                pp.load("num_points_phi", extraction_params.num_points_phi, 24);
-                pp.load("num_points_theta", extraction_params.num_points_theta, 37);
-                pp.load("num_modes", extraction_params.num_modes, 1);
-                
-                std::vector<int> modes_vector;
-                pp.load("modes", modes_vector, extraction_params.num_modes * 2);
-                extraction_params.modes.resize(extraction_params.num_modes);
-                for(int i=0; i < extraction_params.num_modes; ++i)
-                {
-                    extraction_params.modes[i] = {modes_vector[2*i], modes_vector[2*i+1]};
-                }
-
-                pp.load("extraction_center", extraction_params.center, center);
-            }
+            std::string name = "kerr_center[" + std::to_string(idir) + "]";
+            warn_parameter(
+                name, kerr_params.center[idir],
+                (kerr_params.center[idir] >= 0) &&
+                    (kerr_params.center[idir] <= (ivN[idir] + 1) * coarsest_dx),
+                "should be within the computational domain");
         }
     }
 
-    void check_params() { /* Basic checks can go here */ }
-
-    // Initial data and matter parameters
-    WormholeICs::params_t wormhole_params;
-    Potential::params_t potential_params;
-    double G_Newton; // Added back
-    
-    // Gravitational wave extraction
-    bool activate_extraction;
-    spherical_extraction_params_t extraction_params;
+    KerrBH::params_t kerr_params;
 
 #ifdef USE_AHFINDER
-    double AH_initial_guess = 2.0;
+    double AH_initial_guess;
 #endif
 };
 

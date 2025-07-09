@@ -17,7 +17,7 @@
 #include "SimulationParameters.hpp"
 
 // Problem specific includes:
-#include "WormholeLevel.hpp"
+#include "KerrBHLevel.hpp"
 
 // Chombo namespace
 #include "UsingNamespace.H"
@@ -37,12 +37,14 @@ int runGRChombo(int argc, char *argv[])
     // (To simulate a different problem, define a new child of AMRLevel
     // and an associated LevelFactory)
     BHAMR bh_amr;
-    DefaultLevelFactory<WormholeLevel> wormhole_level_fact(bh_amr,
-                                                          sim_params);
-    setupAMRObject(bh_amr, wormhole_level_fact);
+    DefaultLevelFactory<KerrBHLevel> kerr_bh_level_fact(bh_amr, sim_params);
+    setupAMRObject(bh_amr, kerr_bh_level_fact);
 
+    // Set up interpolator:
     // call this after amr object setup so grids known
     // and need it to stay in scope throughout run
+    // Note: 'interpolator' needs to be in scope when bh_amr.run() is called,
+    // otherwise pointer is lost
     AMRInterpolator<Lagrange<4>> interpolator(
         bh_amr, sim_params.origin, sim_params.dx, sim_params.boundary_params,
         sim_params.verbosity);
@@ -51,9 +53,19 @@ int runGRChombo(int argc, char *argv[])
 #ifdef USE_AHFINDER
     if (sim_params.AH_activate)
     {
-        AHSurfaceGeometry sph(sim_params.center);
+        AHSurfaceGeometry sph(sim_params.kerr_params.center);
+
+#ifdef USE_CHI_CONTOURS // uncomment in UserVariables
+        std::string str_chi = std::to_string(
+            sim_params.AH_params.func_params.look_for_chi_contour);
+        sim_params.AH_params.stats_prefix = "stats_chi_" + str_chi + "_";
+        sim_params.AH_params.coords_prefix = "coords_chi_" + str_chi + "_";
         bh_amr.m_ah_finder.add_ah(sph, sim_params.AH_initial_guess,
                                   sim_params.AH_params);
+#else
+        bh_amr.m_ah_finder.add_ah(sph, sim_params.AH_initial_guess,
+                                  sim_params.AH_params);
+#endif
     }
 #endif
 
