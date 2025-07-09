@@ -1,7 +1,7 @@
 // In Examples/Wormhole/Wormhole.hpp
 
-#ifndef WORMHOLE_HPP_
-#define WORMHOLE_HPP_
+#ifndef WORMHOLE_COLLAPSE_HPP_
+#define WORMHOLE_COLLAPSE_HPP_
 
 #include "ADMConformalVars.hpp"
 #include "Cell.hpp"

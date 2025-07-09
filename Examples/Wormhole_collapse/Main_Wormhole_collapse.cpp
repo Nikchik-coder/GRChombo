@@ -14,7 +14,7 @@
 #include "DefaultLevelFactory.hpp"
 #include "GRParmParse.hpp"
 #include "SetupFunctions.hpp"
-#include "WormholeSimParams.hpp"
+#include "SimulationParameters.hpp"
 
 // Problem specific includes:
 #include "WormholeLevel.hpp"
@@ -53,7 +53,7 @@ int runGRChombo(int argc, char *argv[])
 #ifdef USE_AHFINDER
     if (sim_params.AH_activate)
     {
-        AHSurfaceGeometry sph(sim_params.wormhole_collapse_params.center);
+        AHSurfaceGeometry sph(sim_params.wormhole_params.center);
 
 #ifdef USE_CHI_CONTOURS // uncomment in UserVariables
         std::string str_chi = std::to_string(

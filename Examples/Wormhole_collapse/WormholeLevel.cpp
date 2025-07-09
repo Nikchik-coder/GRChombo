@@ -19,7 +19,7 @@
 
 // Initial data
 #include "GammaCalculator.hpp"
-#include "KerrBH.hpp"
+#include "Constraints.hpp"
 
 void WormholeLevel::specificAdvance()
 {
@@ -63,7 +63,7 @@ void WormholeLevel::initialData()
 }
 
 #ifdef CH_USE_HDF5
-void KerrBHLevel::prePlotLevel()
+void WormholeLevel::prePlotLevel()
 {
 #ifdef USE_AHFINDER
     // already calculated in 'specificPostTimeStep'
@@ -77,7 +77,7 @@ void KerrBHLevel::prePlotLevel()
 }
 #endif /* CH_USE_HDF5 */
 
-void KerrBHLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
+void WormholeLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
                                   const double a_time)
 {
     // Enforce the trace free A_ij condition and positive chi and alpha
@@ -101,29 +101,29 @@ void KerrBHLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
     }
 }
 
-void KerrBHLevel::specificUpdateODE(GRLevelData &a_soln,
+void WormholeLevel::specificUpdateODE(GRLevelData &a_soln,
                                     const GRLevelData &a_rhs, Real a_dt)
 {
     // Enforce the trace free A_ij condition
     BoxLoops::loop(TraceARemoval(), a_soln, a_soln, INCLUDE_GHOST_CELLS);
 }
 
-void KerrBHLevel::preTagCells()
+void WormholeLevel::preTagCells()
 {
     // We only use chi in the tagging criterion so only fill the ghosts for chi
     fillAllGhosts(VariableType::evolution, Interval(c_chi, c_chi));
 }
 
-void KerrBHLevel::computeTaggingCriterion(
+void WormholeLevel::computeTaggingCriterion(
     FArrayBox &tagging_criterion, const FArrayBox &current_state,
     const FArrayBox &current_state_diagnostics)
 {
     BoxLoops::loop(ChiTaggingCriterion(m_dx), current_state, tagging_criterion);
 }
 
-void KerrBHLevel::specificPostTimeStep()
+void WormholeLevel::specificPostTimeStep()
 {
-    CH_TIME("KerrBHLevel::specificPostTimeStep");
+    CH_TIME("WormholeLevel::specificPostTimeStep");
 #ifdef USE_AHFINDER
     // if print is on and there are Diagnostics to write, calculate them!
     if (m_bh_amr.m_ah_finder.need_diagnostics(m_dt, m_time))
