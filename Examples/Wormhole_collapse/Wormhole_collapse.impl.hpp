@@ -1,14 +1,12 @@
-// In Examples/Wormhole/Wormhole.impl.hpp
-
 #if !defined(WORMHOLE_COLLAPSE_HPP_)
 #error "This file should only be included through Wormhole_collapse.hpp"
 #endif
 
-#ifndef WORMHOLE_IMPL_HPP_
-#define WORMHOLE_IMPL_HPP_
+#ifndef WORMHOLE_COLLAPSE_IMPL_HPP_
+#define WORMHOLE_COLLAPSE_IMPL_HPP_
 
-#include "DimensionDefinitions.hpp"
 #include "CoordinateTransformations.hpp"
+#include "DimensionDefinitions.hpp"
 #include "TensorAlgebra.hpp"
 
 // This is the main compute function called for each cell
@@ -34,7 +32,7 @@ template <class data_t> void Wormhole_collapse::compute(Cell<data_t> current_cel
     vars.h = spherical_to_cartesian_LL(spherical_g, x, y, z);
     vars.A = spherical_to_cartesian_LL(spherical_K, x, y, z);
 
-    // --- The rest is identical to the KerrBH example ---
+    // Calculate BSSN/CCZ4 variables from ADM variables
     data_t deth = compute_determinant(vars.h);
     auto h_UU = compute_inverse_sym(vars.h);
     vars.chi = pow(deth, -1. / 3.);
@@ -51,11 +49,11 @@ template <class data_t> void Wormhole_collapse::compute(Cell<data_t> current_cel
     vars.lapse = wormhole_lapse; 
     FOR(i) { vars.shift[i] = 0.0; } 
 
+    // Store the computed values
     current_cell.store_vars(vars);
 }
 
 // This is where you define your wormhole metric components
-// THIS SHOULD BE THE ONLY VERSION OF THIS FUNCTION IN THE FILE
 template <class data_t>
 void Wormhole_collapse::compute_wormhole(Tensor<2, data_t> &spherical_g,
                                 Tensor<2, data_t> &spherical_K,
@@ -68,24 +66,27 @@ void Wormhole_collapse::compute_wormhole(Tensor<2, data_t> &spherical_g,
 
     // Get coordinates from the Coordinates object
     data_t r = coords.get_radius();
-
-    // Avoid division by zero at the center
-    static const double minimum_r = 1e-6;
-    r = simd_max(r, minimum_r);
     data_t r_sq = r * r;
 
-    // The shape function b(r) = b0^2 / r.
-    data_t b_over_r = b0 * b0 / r_sq;
+    // The shape function b(r) = b0^2 / r, so b(r)/r = b0^2/r^2.
+    data_t b_over_r = (b0 * b0) / r_sq;
 
-    // Calculate sin_theta^2 manually
+    // For r > b0, g_rr = 1/(1-b/r). For r <= b0, we set g_rr = 1 (flat space) to avoid singularity.
+    // We add a small epsilon to the denominator to prevent division by zero if r is exactly b0.
+    data_t g_rr_wormhole = 1.0 / (1.0 - b_over_r + 1e-12);
+    data_t g_rr_flat = 1.0;
+
+    // Use a conditional to select the correct g_rr based on r
+    auto outside_throat = simd_compare_gt(r, data_t(b0));
+    data_t g_rr = simd_conditional(outside_throat, g_rr_wormhole, g_rr_flat);
+
+    // Calculate sin_theta^2 safely to avoid division by zero at r=0
     data_t rho_sq = coords.x * coords.x + coords.y * coords.y;
-    data_t sin_theta_sq = rho_sq / r_sq;
-    auto r_sq_is_large = simd_compare_gt(r_sq, data_t(1e-12));
-    sin_theta_sq = simd_conditional(r_sq_is_large, sin_theta_sq, data_t(0.0));
+    data_t sin_theta_sq = rho_sq / simd_max(r_sq, 1e-12);
 
     // The metric components in spherical coordinates (r, theta, phi)
     FOR(i, j) { spherical_g[i][j] = 0.0; }
-    spherical_g[0][0] = 1.0 / (1.0 - b_over_r); // g_rr
+    spherical_g[0][0] = g_rr;                   // g_rr
     spherical_g[1][1] = r_sq;                   // g_thetatheta
     spherical_g[2][2] = r_sq * sin_theta_sq;    // g_phiphi
 
@@ -95,4 +96,5 @@ void Wormhole_collapse::compute_wormhole(Tensor<2, data_t> &spherical_g,
     // Calculate the lapse from the redshift function alpha = exp(Phi)
     wormhole_lapse = exp(phi_0);
 }
-#endif /* WORMHOLE_IMPL_HPP_ */
+
+#endif /* WORMHOLE_COLLAPSE_IMPL_HPP_ */

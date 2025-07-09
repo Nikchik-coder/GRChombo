@@ -120,13 +120,13 @@ max_spatial_derivative_order = 4 # can be 4 or 6
 nan_check = 1
 
 # Lapse evolution
-lapse_advec_coeff = 1.0
-lapse_coeff = 2.0
+lapse_advec_coeff = 0.0
+lapse_coeff = 0.0
 lapse_power = 1.0
 
 # Shift evolution
 shift_advec_coeff = 0.0 # Usually no advection for beta
-shift_Gamma_coeff = 0.75
+shift_Gamma_coeff = 0.0
 eta = 1.0 # eta of gamma driver, should be of order ~1/M_ADM of spacetime
 
 # CCZ4 parameters
@@ -137,7 +137,7 @@ kappa3 = 0.
 covariantZ4 = 1 # 0: keep kappa1; 1 [default]: replace kappa1 -> kappa1/lapse
 
 # coefficient for KO numerical dissipation
-sigma = 0.3
+sigma = 2
 
 # min_chi = 1.e-4
 # min_lapse = 1.e-4

@@ -64,8 +64,8 @@ regrid_interval   =  50  25   5
 regrid_thresholds = 0.3 0.3 0.3
 
 # Max and min box sizes
-max_box_size = 16
-min_box_size = 16
+max_box_size = 32
+min_box_size = 32
 
 # tag_buffer_size = 3
 # grid_buffer_size = 8
