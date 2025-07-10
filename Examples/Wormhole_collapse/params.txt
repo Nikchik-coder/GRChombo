@@ -35,7 +35,10 @@ print_progress_only_to_rank_0 = 1
 
 #################################################
 # Initial Data parameters
-throat_radius = 1.0
+throat_radius = 2.0
+schwarzschild_radius = 3.0
+matching_radius = 5.0
+transition_width = 2.0
 redshift_constant = 0.0
 # kerr_center = 64 64 64 # defauts to center
 
@@ -60,7 +63,7 @@ max_level = 6 # There are (max_level+1) grids, so min is zero
 # Generally you do not need to regrid frequently on every level
 # Level Regridding:   0   1   2   3   4   5
 regrid_interval   =  50  25   5   5   5   5
-regrid_thresholds = 0.12 0.12 0.12 0.12 0.12 0.12
+regrid_thresholds = 0.2 0.2 0.2 0.2 0.2 0.2
 
 # Max and min box sizes
 max_box_size = 16

@@ -22,6 +22,9 @@ class SimulationParameters : public SimulationParametersBase
     {
         // Load wormhole parameters
         pp.load("throat_radius", wormhole_params.throat_radius, 1.0);
+        pp.load("matching_radius", wormhole_params.matching_radius);
+        pp.load("schwarzschild_radius", wormhole_params.schwarzschild_radius);
+        pp.load("transition_width", wormhole_params.transition_width);
         pp.load("redshift_constant", wormhole_params.redshift_constant, 0.0);
         wormhole_params.center = center; // Use the center from the base class
 

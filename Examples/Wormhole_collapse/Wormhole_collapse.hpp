@@ -21,6 +21,9 @@ class Wormhole_collapse
     {
         double throat_radius;                   //!< The radius of the wormhole throat, b0
         double redshift_constant;               //!< The constant value for the redshift function Phi
+        double matching_radius;
+        double schwarzschild_radius;
+        double transition_width;
         std::array<double, CH_SPACEDIM> center; //!< The center of the wormhole
     };
 
@@ -44,7 +47,7 @@ class Wormhole_collapse
         data_t &wormhole_lapse,
         const Coordinates<data_t> &coords) const;
 };
-
+// --- This is the correct placement ---
 #include "Wormhole_collapse.impl.hpp"
 
-#endif /* WORMHOLE_COLLAPSE_HPP_ */  
+#endif /* WORMHOLE_COLLAPSE_HPP_ */

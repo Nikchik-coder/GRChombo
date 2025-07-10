@@ -67,7 +67,7 @@ source venv/bin/activate && mpirun -n 4 python corrected_plot.py
 # List available field directories after plotting
 source venv/bin/activate && python create_animation.py --list
 
-source venv/bin/activate && mpirun -n 4 create_animation.py --list
+source venv/bin/activate && mpirun -n 4 python create_animation.py --list
 
 # Create animations for all available fields
 source venv/bin/activate && python create_animation.py all
