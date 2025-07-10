@@ -36,10 +36,12 @@ print_progress_only_to_rank_0 = 1
 #################################################
 # Initial Data parameters
 throat_radius = 2.0
-schwarzschild_radius = 3.0
-matching_radius = 5.0
+schwarzschild_radius = 3.0  # Must be <= throat_radius
+matching_radius = 5.0       # Must be > schwarzschild_radius
 transition_width = 2.0
 redshift_constant = 0.0
+
+
 # kerr_center = 64 64 64 # defauts to center
 
 #################################################
@@ -56,7 +58,7 @@ N_full = 32
 L_full = 32
 
 # Maximum number of times you can regrid above coarsest level
-max_level = 6 # There are (max_level+1) grids, so min is zero
+max_level = 2 # There are (max_level+1) grids, so min is zero
 
 # Frequency of regridding at each level and thresholds on the tagging
 # Need one for each level except the top one, ie max_level items
@@ -123,13 +125,13 @@ max_spatial_derivative_order = 4 # can be 4 or 6
 nan_check = 1
 
 # Lapse evolution
-lapse_advec_coeff = 0.0
-lapse_coeff = 0.0
+lapse_advec_coeff = 1.0
+lapse_coeff = 2.0
 lapse_power = 1.0
 
 # Shift evolution
 shift_advec_coeff = 0.0 # Usually no advection for beta
-shift_Gamma_coeff = 0.0
+shift_Gamma_coeff = 0.75
 eta = 1.0 # eta of gamma driver, should be of order ~1/M_ADM of spacetime
 
 # CCZ4 parameters
@@ -142,8 +144,8 @@ covariantZ4 = 1 # 0: keep kappa1; 1 [default]: replace kappa1 -> kappa1/lapse
 # coefficient for KO numerical dissipation
 sigma = 0.3
 
-# min_chi = 1.e-4
-# min_lapse = 1.e-4
+min_chi = 1.e-3
+min_lapse = 1.e-3
 
 #################################################
 # Apparent Horizon Finder parameters
