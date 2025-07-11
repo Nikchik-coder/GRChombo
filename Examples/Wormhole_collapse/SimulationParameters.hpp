@@ -1,12 +1,14 @@
-#ifndef WORMSIMPARAMS_HPP_ // Renamed include guard
-#define WORMSIMPARAMS_HPP_
+// In Examples/Wormhole_collapse/SimulationParameters.hpp
+
+#ifndef SIMULATIONPARAMETERS_HPP_
+#define SIMULATIONPARAMETERS_HPP_
 
 // General includes
 #include "GRParmParse.hpp"
 #include "SimulationParametersBase.hpp"
 
 // Problem specific includes:
-#include "Wormhole_collapse.hpp" // Include your new class
+#include "Wormhole_collapse.hpp" // The new initial data class
 
 class SimulationParameters : public SimulationParametersBase
 {
@@ -20,27 +22,25 @@ class SimulationParameters : public SimulationParametersBase
     /// Read parameters from the parameter file
     void read_params(GRParmParse &pp)
     {
-        // Load wormhole parameters
-        pp.load("throat_radius", wormhole_params.throat_radius, 1.0);
-        pp.load("matching_radius", wormhole_params.matching_radius);
-        pp.load("schwarzschild_radius", wormhole_params.schwarzschild_radius);
-        pp.load("transition_width", wormhole_params.transition_width);
-        pp.load("redshift_constant", wormhole_params.redshift_constant, 0.0);
+        // Load the mass parameter for the Schwarzschild wormhole
+        pp.load("wormhole_mass", wormhole_params.mass, 1.0);
         wormhole_params.center = center; // Use the center from the base class
 
         // Load Apparent Horizon Finder parameters
 #ifdef USE_AHFINDER
-        pp.load("AH_initial_guess", AH_initial_guess, wormhole_params.throat_radius);
+        // A good initial guess for the AH is the Schwarzschild radius
+        double AH_default_guess = 2.0 * wormhole_params.mass;
+        pp.load("AH_initial_guess", AH_initial_guess, AH_default_guess);
 #endif
     }
 
     void check_params()
     {
-        warn_parameter("throat_radius", wormhole_params.throat_radius, wormhole_params.throat_radius > 0.0,
+        warn_parameter("wormhole_mass", wormhole_params.mass, wormhole_params.mass > 0.0,
                        "should be > 0.0");
     }
 
-    // Member variable for your new params
+    // Member variable for the initial data parameters
     Wormhole_collapse::params_t wormhole_params;
 
 #ifdef USE_AHFINDER
@@ -48,4 +48,4 @@ class SimulationParameters : public SimulationParametersBase
 #endif
 };
 
-#endif /* WORMSIMPARAMS_HPP_ */
+#endif /* SIMULATIONPARAMETERS_HPP_ */

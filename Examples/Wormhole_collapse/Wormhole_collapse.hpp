@@ -1,4 +1,4 @@
-// In Examples/Wormhole/Wormhole.hpp
+// In Examples/Wormhole_collapse/Wormhole_collapse.hpp
 
 #ifndef WORMHOLE_COLLAPSE_HPP_
 #define WORMHOLE_COLLAPSE_HPP_
@@ -13,41 +13,32 @@
 
 class Wormhole_collapse
 {
+  public:
+    // Define the type for the BSSN variables and gauge
     template <class data_t>
     using Vars = ADMConformalVars::VarsWithGauge<data_t>;
 
-  public:
+    // Struct for the initial data parameters
     struct params_t
     {
-        double throat_radius;                   //!< The radius of the wormhole throat, b0
-        double redshift_constant;               //!< The constant value for the redshift function Phi
-        double matching_radius;
-        double schwarzschild_radius;
-        double transition_width;
-        std::array<double, CH_SPACEDIM> center; //!< The center of the wormhole
+        double mass;                            //!< The mass parameter M of the Schwarzschild solution
+        std::array<double, CH_SPACEDIM> center; //!< The center of the grid
     };
 
   protected:
     double m_dx;
-    params_t m_params;
+    const params_t m_params;
 
   public:
-    Wormhole_collapse(params_t a_params, double a_dx) : m_dx(a_dx), m_params(a_params) {}
+    Wormhole_collapse(params_t a_params, double a_dx)
+        : m_dx(a_dx), m_params(a_params)
+    {
+    }
 
-    // Main function to calculate and fill variables for a cell
+    /// This function computes the BSSN variables for the initial data
     template <class data_t> void compute(Cell<data_t> current_cell) const;
-
-  protected:
-    // Helper function to compute metric components in spherical coordinates
-    // --- MODIFIED: Now also computes the lapse ---
-    template <class data_t>
-    void compute_wormhole(
-        Tensor<2, data_t> &spherical_g, 
-        Tensor<2, data_t> &spherical_K,
-        data_t &wormhole_lapse,
-        const Coordinates<data_t> &coords) const;
 };
-// --- This is the correct placement ---
+
 #include "Wormhole_collapse.impl.hpp"
 
 #endif /* WORMHOLE_COLLAPSE_HPP_ */

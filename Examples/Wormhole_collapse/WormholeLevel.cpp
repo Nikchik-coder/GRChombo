@@ -55,22 +55,15 @@ void WormholeLevel::initialData()
     BoxLoops::loop(IntegratedMovingPunctureGauge(m_p.ccz4_params), m_state_new,
                    m_state_new, EXCLUDE_GHOST_CELLS);
 
-#ifdef USE_AHFINDER
-    // Diagnostics needed for AHFinder
+    // Always calculate constraints for diagnostics
     BoxLoops::loop(Constraints(m_dx, c_Ham, Interval(c_Mom1, c_Mom3)),
                    m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
-#endif
 }
 
 #ifdef CH_USE_HDF5
 void WormholeLevel::prePlotLevel()
 {
-#ifdef USE_AHFINDER
-    // already calculated in 'specificPostTimeStep'
-    if (m_bh_amr.m_ah_finder.need_diagnostics(m_dt, m_time))
-        return;
-#endif
-
+    // Always calculate constraints for plot output
     fillAllGhosts();
     BoxLoops::loop(Constraints(m_dx, c_Ham, Interval(c_Mom1, c_Mom3)),
                    m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
