@@ -72,6 +72,8 @@ source venv/bin/activate && mpirun -n 4 python create_animation.py --list
 # Create animations for all available fields
 source venv/bin/activate && python create_animation.py all
 
+source venv/bin/activate && mpirun -n 4 python create_animation.py all
+
 # OR create animation for specific field
 source venv/bin/activate && python create_animation.py chi
 
@@ -458,6 +460,7 @@ For questions about this visualization toolkit or binary black hole simulations:
 
 nik@Nik:~/GRChombo$ 
 miltonian_norm_vs_time.png
+
 python3 Animation/compute_and_plot_hamiltonian.py /home/nik/GRChombo_runs/Wormhole_Collapse/ --output_dir Animation/
 
 python3 Animation/plot_hamiltonian.py /home/nik/GRChombo_runs/Wormhole_Collapse/hdf5/Wormhole_p_000000.3d.hdf5 --output_dir Animation

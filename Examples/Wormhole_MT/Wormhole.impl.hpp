@@ -1,5 +1,4 @@
-      
-// In Examples/Wormhole_collapse/Wormhole.impl.hpp
+// In Examples/Wormhole_MT/Wormhole.impl.hpp
 
 #if !defined(WORMHOLE_HPP_)
 #error "This file should only be included through Wormhole.hpp"
@@ -23,7 +22,7 @@ void Wormhole::compute(Cell<data_t> current_cell) const
     double b0 = m_params.throat_radius;
     double Phi0 = m_params.redshift_constant;
     const double epsilon = 1e-6;
-    r = simd_max(r, b0 + epsilon);
+    r = simd_max(r, b0 + epsilon); // Ensure r is safely outside the throat
 
     // 2. Calculate BSSN variables for a Morris-Thorne wormhole
     Vars<data_t> vars;
@@ -56,5 +55,3 @@ void Wormhole::compute(Cell<data_t> current_cell) const
 }
 
 #endif /* WORMHOLE_IMPL_HPP_ */
-
-    

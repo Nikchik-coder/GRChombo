@@ -1,11 +1,11 @@
-// In Examples/Wormhole_collapse/WormholeLevel.cpp
+// In Examples/Wormhole_MT/WormholeLevel.cpp
 
 #include "WormholeLevel.hpp"
 #include "BoxLoops.hpp"
 #include "CCZ4RHS.hpp"
 #include "ChiTaggingCriterion.hpp"
 #include "ComputePack.hpp"
-#include "Constraints.hpp" // Changed from NewConstraints.hpp
+#include "NewConstraints.hpp" // Using the correct, modern constraints class
 #include "GammaCalculator.hpp"
 #include "IntegratedMovingPunctureGauge.hpp"
 #include "NanCheck.hpp"
@@ -13,9 +13,8 @@
 #include "SetValue.hpp"
 #include "SixthOrderDerivatives.hpp"
 #include "TraceARemoval.hpp"
-#include "Wormhole.hpp" // Use the new Wormhole class header
+#include "Wormhole.hpp"
 
-// ... (specificAdvance function remains the same) ...
 void WormholeLevel::specificAdvance()
 {
     BoxLoops::loop(make_compute_pack(TraceARemoval(), PositiveChiAndAlpha()),
@@ -27,14 +26,12 @@ void WormholeLevel::specificAdvance()
             m_state_new, m_state_new, EXCLUDE_GHOST_CELLS, disable_simd());
 }
 
-
 void WormholeLevel::initialData()
 {
     CH_TIME("WormholeLevel::initialData");
     if (m_verbosity)
         pout() << "WormholeLevel::initialData " << m_level << endl;
 
-    // Use the new Wormhole class to set the initial data
     BoxLoops::loop(
         make_compute_pack(SetValue(0.), Wormhole(m_p.wormhole_params, m_dx)),
         m_state_new, m_state_new, INCLUDE_GHOST_CELLS);
@@ -43,14 +40,10 @@ void WormholeLevel::initialData()
     BoxLoops::loop(GammaCalculator(m_dx), m_state_new, m_state_new,
                    EXCLUDE_GHOST_CELLS);
 
-    // No need to call IntegratedMovingPunctureGauge here.
-
-    // Always calculate constraints for diagnostics
     BoxLoops::loop(Constraints(m_dx, c_Ham, Interval(c_Mom1, c_Mom3)),
                    m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
 }
 
-// ... (The rest of the file, prePlotLevel, specificEvalRHS, etc., can remain unchanged) ...
 #ifdef CH_USE_HDF5
 void WormholeLevel::prePlotLevel()
 {
@@ -85,7 +78,7 @@ void WormholeLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
 void WormholeLevel::specificUpdateODE(GRLevelData &a_soln,
                                     const GRLevelData &a_rhs, Real a_dt)
 {
-    BoxLoops::loop(TraceARemoval(), a_soln, a_soln, INCLUDE_GHOST_ CELLS);
+    BoxLoops::loop(TraceARemoval(), a_soln, a_soln, INCLUDE_GHOST_CELLS);
 }
 
 void WormholeLevel::preTagCells()
@@ -94,8 +87,8 @@ void WormholeLevel::preTagCells()
 }
 
 void WormholeLevel::computeTaggingCriterion(
-    FArrayBox &tagging_criterion, const FArrayBox ¤t_state,
-    const FArrayBox ¤t_state_diagnostics)
+    FArrayBox &tagging_criterion, const FArrayBox &current_state,
+    const FArrayBox &current_state_diagnostics)
 {
     BoxLoops::loop(ChiTaggingCriterion(m_dx), current_state, tagging_criterion);
 }
