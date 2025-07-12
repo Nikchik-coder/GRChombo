@@ -453,3 +453,11 @@ For questions about this visualization toolkit or binary black hole simulations:
 **Last Updated**: July 2025  
 **Version**: 1.0  
 **Status**: Production Ready ✅
+
+
+
+nik@Nik:~/GRChombo$ 
+miltonian_norm_vs_time.png
+python3 Animation/compute_and_plot_hamiltonian.py /home/nik/GRChombo_runs/Wormhole_Collapse/ --output_dir Animation/
+
+python3 Animation/plot_hamiltonian.py /home/nik/GRChombo_runs/Wormhole_Collapse/hdf5/Wormhole_p_000000.3d.hdf5 --output_dir Animation

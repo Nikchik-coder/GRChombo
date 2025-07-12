@@ -1,158 +1,308 @@
 #!/usr/bin/env python3
 """
-Plot Hamiltonian constraint for Wormhole simulation
-Simplified script to plot only the Ham field which is available in the dataset
+Hamiltonian Constraint Animation for GRChombo
+Creates animations and plots of the Hamiltonian constraint violation over time
 """
 
 import yt
+import matplotlib.pyplot as plt
+import numpy as np
+import argparse
 import os
-import matplotlib
 import glob
+import imageio
+from datetime import datetime
 
-matplotlib.use("Agg")
+def plot_hamiltonian_slice(file_path, output_dir=".", show_grid=True):
+    """
+    Loads a GRChombo HDF5 plot file and creates a 2D slice plot of the
+    Hamiltonian constraint 'Ham'. This version uses syntax compatible with
+    older yt versions that have these specific AttributeErrors.
 
-def get_center(ds):
-    """Get center of the simulation domain"""
-    center = None
-    if hasattr(ds,'domain_right_edge'):
-        center = ds.domain_right_edge / 2.0
-    elif hasattr(ds[0],'domain_right_edge'):
-        center = ds[0].domain_right_edge / 2.0
-    return center
-
-# Enable Parallelism
-yt.enable_parallelism()
-
-# Data file location - adjust this path as needed
-data_location = "/home/nik/GRChombo_runs/Wormhole_Collapse/hdf5/Wormhole_*.3d.hdf5"
-
-print("Looking for data files...")
-print(f"Data location pattern: {data_location}")
-
-# Check if files exist
-test_files = glob.glob(data_location)
-if not test_files:
-    print("No data files found!")
-    print("Please check the data location path.")
-    exit(1)
-
-print(f"Found {len(test_files)} data files")
-
-# Loading dataset
-ts = yt.load(data_location)
-
-# Check what fields are available in the dataset
-if yt.is_root():
-    print("\nChecking available fields...")
-    try:
-        available_fields = [field[1] for field in ts[0].field_list if field[0] == 'chombo']
-        print("Available fields in the dataset:")
-        for field in available_fields:
-            print(f"  - {field}")
-        print()
+    Args:
+        file_path (str): The full path to the HDF5 plot file.
+        output_dir (str): The directory to save the output PNG image.
+        show_grid (bool): Whether to show the AMR grid structure.
         
-        # Check if Ham field is available
-        if 'Ham' not in available_fields:
-            print("ERROR: Ham field not found in dataset!")
-            print("Cannot plot Hamiltonian constraint.")
-            exit(1)
-        else:
-            print("✓ Ham (Hamiltonian constraint) field found!")
+    Returns:
+        str: Path to the saved image file, or None if failed
+    """
+    if not os.path.exists(file_path):
+        print(f"Error: File not found at '{file_path}'")
+        return None
+
+    print(f"Loading file: {file_path}")
+    
+    try:
+        # --- 1. Load Data with YT ---
+        ds = yt.load(file_path)
+
+        # --- 2. Create a Slice Plot Object ---
+        field_to_plot = ("chombo", "Ham")
+        
+        if field_to_plot not in ds.field_list:
+            print(f"Error: Field '{field_to_plot[1]}' not found in the dataset.")
+            print("Available fields are:")
+            for field in ds.field_list:
+                print(f"  - {field[1]}")
+            return None
             
+        slc = yt.SlicePlot(ds, "z", [field_to_plot])
+
+        # --- 3. Customize the Plot (Syntax for your yt version) ---
+        
+        # Set the colormap for the specified field
+        slc.set_cmap(field_to_plot, 'plasma')
+        
+        # Set the color scale to logarithmic
+        slc.set_log(field_to_plot, True, linthresh=1e-10)
+        
+        # Set the color bar limits
+        # We find the min/max of the data in the slice to set robust limits
+        data = slc.frb[field_to_plot]
+        min_val = np.min(data[data > 0]) if np.any(data > 0) else 1e-9
+        max_val = np.max(data) if np.any(data > 0) else 1e-1
+        slc.set_zlim(field_to_plot, min_val, max_val)
+
+        # Annotate the plot with a title and AMR grid patches
+        sim_time = ds.current_time.to_value()
+        slc.annotate_title(f"Hamiltonian Constraint at t = {sim_time:.2f}")
+        
+        if show_grid:
+            slc.annotate_grids()
+        
+        # Set the figure size
+        slc.set_figure_size(8)
+
+        # --- 4. Save the Plot ---
+        file_basename = os.path.basename(file_path)
+        output_filename = f"hamiltonian_{file_basename.replace('.3d.hdf5', '.png')}"
+        output_path = os.path.join(output_dir, output_filename)
+        
+        # The save command is universal
+        slc.save(output_path, mpl_kwargs={"dpi": 200})
+        
+        print(f"Saved plot to: {output_path}")
+        return output_path
+        
     except Exception as e:
-        print(f"Error checking fields: {e}")
-        exit(1)
+        print(f"Error processing {file_path}: {e}")
+        return None
 
-# Set up plotting parameters
-field_name = "Ham"
-center = get_center(ts)
-center[2] = 0  # Set z=0 for equatorial plane slice
-axis = "z"  # Plot z-slice through equatorial plane
-
-# Create output directory
-if yt.is_root():
-    output_dir = "hamiltonian_plots"
-    if not os.path.exists(output_dir):
-        os.mkdir(output_dir)
-        print(f"Created output directory: {output_dir}")
+def find_hamiltonian_files(pattern="Wormhole_p_*.3d.hdf5", base_dir=None):
+    """
+    Find all Hamiltonian constraint HDF5 files matching the pattern
+    
+    Args:
+        pattern (str): File pattern to search for
+        base_dir (str): Directory to search in
+        
+    Returns:
+        list: Sorted list of file paths
+    """
+    if base_dir:
+        files = glob.glob(os.path.join(base_dir, pattern))
     else:
-        # Clean existing plots
-        old_plots = glob.glob(f"{output_dir}/*.png")
-        if old_plots:
-            print(f"Cleaning {len(old_plots)} old plots from {output_dir}/ directory")
-            for plot_file in old_plots:
-                os.remove(plot_file)
+        files = glob.glob(pattern)
+        
+    if not files:
+        # Try common subdirectories
+        search_dirs = [
+            "/home/nik/GRChombo_runs/Wormhole_Collapse/hdf5/",
+            "hdf5", "output", "data", "../hdf5", "../output"
+        ]
+        for subdir in search_dirs:
+            if os.path.exists(subdir):
+                files = glob.glob(os.path.join(subdir, pattern))
+                if files:
+                    break
+    
+    return sorted(files)
 
-def produce_hamiltonian_plot(data, variable="Ham", axis="z"):
-    """Create a slice plot of the Hamiltonian constraint"""
+def create_hamiltonian_animation(output_dir="hamiltonian_plots", file_pattern="Wormhole_p_*.3d.hdf5", 
+                               max_files=50, duration=0.5, show_grid=True, base_dir=None):
+    """
+    Create an animation of the Hamiltonian constraint evolution
     
-    print(f"Creating plot for time = {float(data.current_time):.3f}")
+    Args:
+        output_dir (str): Directory to save individual plots and animation
+        file_pattern (str): Pattern to match HDF5 files
+        max_files (int): Maximum number of files to process
+        duration (float): Duration per frame in seconds
+        show_grid (bool): Whether to show AMR grid structure
+        base_dir (str): Base directory to search for files
+        
+    Returns:
+        str: Path to the created animation file
+    """
+    # Find HDF5 files
+    hdf5_files = find_hamiltonian_files(file_pattern, base_dir)
     
-    # Create slice plot
-    slc = yt.SlicePlot(data, axis, ('chombo', variable), center=center)
+    if not hdf5_files:
+        print(f"No HDF5 files found matching pattern: {file_pattern}")
+        if base_dir:
+            print(f"Searched in: {base_dir}")
+        print("Please ensure your HDF5 files are accessible or specify the correct pattern.")
+        return None
     
-    # Configure the plot for Hamiltonian constraint
-    slc.set_log(variable, False)  # Don't use log scale
-    slc.set_cmap(field=variable, cmap="RdBu_r")  # Good for constraint violations
+    # Limit number of files for reasonable animation length
+    if len(hdf5_files) > max_files:
+        step = len(hdf5_files) // max_files
+        hdf5_files = hdf5_files[::step]
     
-    # Set labels
-    slc.set_xlabel(r"x $\left[\frac{1}{m}\right]$")
-    slc.set_ylabel(r"y $\left[\frac{1}{m}\right]$")
-    slc.set_colorbar_label(variable, "Hamiltonian Constraint")
+    print(f"Creating Hamiltonian constraint animation with {len(hdf5_files)} frames...")
     
-    # Add time annotation
-    slc.annotate_text(
-        (0.13, 0.92),
-        ("time = " + str(float(data.current_time)) + " 1/m"),
-        coord_system="figure",
-        text_args={"color": "white"},
+    # Create output directory
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # Generate individual plots
+    image_files = []
+    for i, hdf5_file in enumerate(hdf5_files):
+        print(f"Processing frame {i+1}/{len(hdf5_files)}: {os.path.basename(hdf5_file)}")
+        
+        image_path = plot_hamiltonian_slice(hdf5_file, output_dir, show_grid)
+        if image_path and os.path.exists(image_path):
+            image_files.append(image_path)
+    
+    if not image_files:
+        print("No valid images were created!")
+        return None
+    
+    # Create animation
+    print(f"Creating GIF animation from {len(image_files)} images...")
+    
+    # Read images and create GIF
+    images = []
+    for img_path in image_files:
+        try:
+            images.append(imageio.imread(img_path))
+        except Exception as e:
+            print(f"Error reading {img_path}: {e}")
+            continue
+    
+    if not images:
+        print("No images could be read for animation!")
+        return None
+    
+    # Save animation
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    animation_path = os.path.join(output_dir, f"hamiltonian_animation_{timestamp}.gif")
+    
+    try:
+        imageio.mimsave(animation_path, images, duration=duration)
+        print(f"Animation saved to: {animation_path}")
+        
+        # Save metadata
+        metadata_file = os.path.join(output_dir, f"animation_info_{timestamp}.txt")
+        with open(metadata_file, 'w') as f:
+            f.write(f"Hamiltonian Constraint Animation\n")
+            f.write(f"================================\n\n")
+            f.write(f"Creation Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+            f.write(f"Source Files: {len(hdf5_files)} HDF5 files\n")
+            f.write(f"Animation Frames: {len(images)}\n")
+            f.write(f"Frame Duration: {duration} seconds\n")
+            f.write(f"Total Duration: {len(images) * duration:.1f} seconds\n")
+            f.write(f"Grid Overlay: {'Yes' if show_grid else 'No'}\n")
+            f.write(f"File Pattern: {file_pattern}\n")
+            f.write(f"Animation File: {os.path.basename(animation_path)}\n")
+        
+        print(f"Animation metadata saved to: {metadata_file}")
+        return animation_path
+        
+    except Exception as e:
+        print(f"Error creating animation: {e}")
+        return None
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Generate Hamiltonian constraint plots and animations from GRChombo data."
+    )
+    parser.add_argument(
+        "action",
+        choices=["plot", "animate"],
+        nargs="?", 
+        default="plot",
+        help="Action to perform: 'plot' for single plot, 'animate' for animation"
+    )
+    parser.add_argument(
+        "file_path",
+        nargs="?",
+        help="Path to HDF5 file (for plot) or file pattern (for animate)"
+    )
+    parser.add_argument(
+        "--output_dir",
+        type=str,
+        default="hamiltonian_plots",
+        help="Directory to save output files"
+    )
+    parser.add_argument(
+        "--max_files",
+        type=int,
+        default=50,
+        help="Maximum number of files to use for animation"
+    )
+    parser.add_argument(
+        "--duration",
+        type=float,
+        default=0.5,
+        help="Duration per frame in seconds for animation"
+    )
+    parser.add_argument(
+        "--no_grid",
+        action="store_true",
+        help="Don't show AMR grid overlay"
+    )
+    parser.add_argument(
+        "--base_dir",
+        type=str,
+        default="/home/nik/GRChombo_runs/Wormhole_Collapse/hdf5/",
+        help="Base directory to search for HDF5 files"
     )
     
-    # Set resolution and window size
-    slc.set_buff_size(1024)
-    slc.set_width(10)
+    args = parser.parse_args()
     
-    # Save the plot
-    slc.save(f"{output_dir}/")
+    # If no action specified but file_path given, assume plot
+    if args.file_path and args.action == "plot":
+        if not os.path.exists(args.output_dir):
+            os.makedirs(args.output_dir)
+            
+        result = plot_hamiltonian_slice(
+            args.file_path, 
+            args.output_dir, 
+            show_grid=not args.no_grid
+        )
+        if result:
+            print(f"Plot created successfully: {result}")
     
-    return slc
-
-# Plot for all timesteps
-print(f"\nCreating Hamiltonian constraint plots...")
-plot_count = 0
-
-if hasattr(ts, 'piter'):
-    # Multiple datasets (parallel case)
-    print("Processing multiple datasets...")
-    for i in ts.piter():
-        try:
-            produce_hamiltonian_plot(i)
-            plot_count += 1
-        except Exception as e:
-            if yt.is_root():
-                print(f"Error creating plot: {e}")
-else:
-    # Single dataset (serial case)
-    if yt.is_root():
-        print("Processing single dataset...")
-        try:
-            produce_hamiltonian_plot(ts)
-            plot_count += 1
-        except Exception as e:
-            print(f"Error creating plot: {e}")
-
-if yt.is_root():
-    if plot_count > 0:
-        print(f"\n✅ Successfully created {plot_count} Hamiltonian constraint plots!")
-        print(f"Plots saved in: {output_dir}/")
-        print("\nNext steps:")
-        print("1. Check the plots in the hamiltonian_plots/ directory")
-        print("2. Use create_animation.py to make an animation:")
-        print("   python create_animation.py hamiltonian_plots")
-    else:
-        print("\n❌ No plots were created successfully.")
+    elif args.action == "animate":
+        file_pattern = args.file_path if args.file_path else "Wormhole_p_*.3d.hdf5"
         
-    print(f"\nDataset info:")
-    print(f"- Number of timesteps: {len(ts)}")
-    print(f"- Available field: Ham (Hamiltonian constraint)")
-    print(f"- Domain center: {center}") 
+        result = create_hamiltonian_animation(
+            output_dir=args.output_dir,
+            file_pattern=file_pattern,
+            max_files=args.max_files,
+            duration=args.duration,
+            show_grid=not args.no_grid,
+            base_dir=args.base_dir
+        )
+        if result:
+            print(f"Animation created successfully: {result}")
+    
+    else:
+        # Default behavior - try to create a single plot
+        if args.file_path:
+            if not os.path.exists(args.output_dir):
+                os.makedirs(args.output_dir)
+                
+            result = plot_hamiltonian_slice(
+                args.file_path, 
+                args.output_dir, 
+                show_grid=not args.no_grid
+            )
+            if result:
+                print(f"Plot created successfully: {result}")
+        else:
+            print("Please specify a file path for plotting or use 'animate' action for animation")
+
+if __name__ == "__main__":
+    main()
