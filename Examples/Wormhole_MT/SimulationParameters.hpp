@@ -22,6 +22,7 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("redshift_constant", wormhole_params.redshift_constant, 0.0);
         pp.load("K_amplitude", wormhole_params.K_amplitude, 0.0);
         pp.load("K_width", wormhole_params.K_width, 1.0);
+        pp.load("regularization_radius", wormhole_params.regularization_radius, 0.1);
 
         wormhole_params.center = center; // Use the grid center from the base class
 

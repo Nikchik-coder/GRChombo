@@ -41,10 +41,11 @@ redshift_constant = 0.0 # The constant redshift, Phi0. 0 = no tidal forces.
 
 # Initial "squeeze" for collapse
 # A negative amplitude means collapse. Set to 0 for collapse via numerical noise only.
-K_amplitude = -0.1
-K_width = 2.0
+K_amplitude = -0.001
+K_width = 10.0
+regularization_radius = 0.1
 
-# kerr_center = 64 64 64 # defauts to center
+center = 32 32 32
 
 #################################################
 # Grid parameters
@@ -69,7 +70,7 @@ max_level = 3 # There are (max_level+1) grids, so min is zero
 # Generally you do not need to regrid frequently on every level
 # Level Regridding:   0   1   2   3   4   5
 regrid_interval   =  50  25   5   5   5   5
-regrid_thresholds = 0.2 0.2 0.2 0.2 0.2 0.2
+regrid_thresholds = 0.1 0.1 0.1 0.1 0.1 0.1
 
 # Max and min box sizes
 max_box_size = 16
@@ -90,7 +91,7 @@ isPeriodic = 0 0 0
 # 0 = static, 1 = sommerfeld, 2 = reflective
 # (see BoundaryConditions.hpp for details)
 hi_boundary = 1 1 1
-lo_boundary = 1 1 2
+lo_boundary = 1 1 1
 
 # if reflective boundaries selected, must set
 # parity of all vars (in order given by UserVariables.hpp)
@@ -119,8 +120,8 @@ nonzero_asymptotic_values = 1.0 1.0 1.0 1.0 1.0
 # Evolution parameters
 
 # dt will be dx*dt_multiplier on each grid level
-dt_multiplier = 0.25
-stop_time = 100.0
+dt_multiplier = 0.01
+stop_time = 10.0
 max_steps = 400
 
 # Spatial derivative order (only affects CCZ4 RHS)

@@ -25,9 +25,9 @@ class Wormhole
         double redshift_constant;
         double K_amplitude;
         double K_width;
+        double regularization_radius; // <-- ADD THIS LINE
         std::array<double, CH_SPACEDIM> center;
     };
-
   protected:
     double m_dx;
     const params_t m_params;

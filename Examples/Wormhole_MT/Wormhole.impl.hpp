@@ -18,37 +18,55 @@ void Wormhole::compute(Cell<data_t> current_cell) const
 
     // 1. Get Parameters and Coordinates
     Coordinates<data_t> coords(current_cell, m_dx, m_params.center);
-    data_t r = coords.get_radius();
+    data_t l = coords.get_radius(); // This is the proper radial distance
     double b0 = m_params.throat_radius;
     double Phi0 = m_params.redshift_constant;
+    // V-- THE REGULARIZATION PARAMETER --V
+    double eta = m_params.regularization_radius; // A small radius to smooth the cusp
     const double epsilon = 1e-6;
-    r = simd_max(r, b0 + epsilon); // Ensure r is safely outside the throat
 
-    // 2. Calculate BSSN variables for a Morris-Thorne wormhole
+    // BSSN variables
     Vars<data_t> vars;
-    vars.lapse = exp(Phi0);
-    FOR(i) { vars.shift[i] = 0.0; }
-    vars.chi = 1.0;
 
-    data_t b_r = b0 * b0 / r;
-    data_t g_rr_inv = 1.0 - b_r / r;
-    g_rr_inv = simd_max(g_rr_inv, epsilon);
-    data_t g_rr = 1.0 / g_rr_inv;
+    // --- Implementation of the Regularized, Singularity-Free Metric ---
 
+    // 2. Calculate the BSSN variables
+    data_t l2 = l * l;
+    double b02 = b0 * b0;
+    double eta2 = eta * eta;
+
+    // V-- THE REGULARIZATION FIX --V
+    // Replace l^2 with (l^2 + eta^2) in all denominators to prevent blow-ups at l=0
+    data_t l2_reg = l2 + eta2;
+    data_t one_plus_b02_over_l2_reg = 1.0 + b02 / l2_reg;
+    // A-- THE REGULARIZATION FIX --A
+    
+    // Conformal factor chi = (1 + b0^2/(l^2+eta^2))^(-2/3)
+    vars.chi = pow(one_plus_b02_over_l2_reg, -2.0/3.0);
+
+    // Conformal metric h_ij
     Tensor<1, data_t> n;
-    n[0] = coords.x / r;
-    n[1] = coords.y / r;
-    n[2] = coords.z / r;
+    n[0] = coords.x / simd_max(l, epsilon);
+    n[1] = coords.y / simd_max(l, epsilon);
+    n[2] = coords.z / simd_max(l, epsilon);
 
     FOR(i, j)
     {
-        vars.h[i][j] = (i == j ? 1.0 : 0.0) + (g_rr - 1.0) * n[i] * n[j];
+        // V-- THE REGULARIZATION FIX --V
+        data_t gamma_ij = (-b02 / l2_reg) * n[i] * n[j] + one_plus_b02_over_l2_reg * (i==j);
+        // A-- THE REGULARIZATION FIX --A
+        vars.h[i][j] = vars.chi * gamma_ij;
     }
 
+    // Set the lapse, shift, and trace-free extrinsic curvature
+    vars.lapse = exp(Phi0);
+    FOR(i) { vars.shift[i] = 0.0; }
+    FOR(i,j) { vars.A[i][j] = 0.0; }
+
     // 3. Set the initial "velocity" for collapse via Extrinsic Curvature
-    data_t K_profile = m_params.K_amplitude * exp(-(r - b0) * (r - b0) / (m_params.K_width * m_params.K_width));
+    // The throat is at l=0, so the Gaussian is centered there.
+    data_t K_profile = m_params.K_amplitude * exp(-l2 / (m_params.K_width * m_params.K_width));
     vars.K = K_profile;
-    FOR(i, j) { vars.A[i][j] = 0.0; }
 
     // 4. Store the calculated values
     current_cell.store_vars(vars);
