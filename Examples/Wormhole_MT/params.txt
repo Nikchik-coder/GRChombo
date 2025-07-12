@@ -13,7 +13,7 @@ plot_prefix = Wormhole_p_
 # restart_file = KerrBH_000060.3d.hdf5
 
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
-checkpoint_interval = 50
+checkpoint_interval = 10
 # set to 0 to turn off plot files (except at t=0 and t=stop_time)
 # set to -1 to never ever print plotfiles
 plot_interval = 20
@@ -36,7 +36,7 @@ print_progress_only_to_rank_0 = 1
 #################################################
 # Initial Data parameters
 # Morris-Thorne Wormhole parameters
-throat_radius = 1.0     # The radius of the wormhole throat, b0
+throat_radius = 0.1    # The radius of the wormhole throat, b0
 redshift_constant = 0.0 # The constant redshift, Phi0. 0 = no tidal forces.
 
 # Initial "squeeze" for collapse
@@ -45,7 +45,7 @@ K_amplitude = -0.001
 K_width = 10.0
 regularization_radius = 0.1
 
-center = 32 32 32
+center = 16 16 16
 
 #################################################
 # Grid parameters
@@ -57,20 +57,21 @@ center = 32 32 32
 # NB - if you have a non-cubic grid, you can specify 'N1' or 'N1_full',
 # 'N2' or 'N2_full' and 'N3' or 'N3_full' ( then dx_coarsest = L/N(max) )
 # NB - the N values need to be multiples of the block_factor
-N_full = 64
-L_full = 64
+
+N_full = 128
+L_full = 32
 
 # Maximum number of times you can regrid above coarsest level
-max_level = 3 # There are (max_level+1) grids, so min is zero
+max_level = 4 # There are (max_level+1) grids, so min is zero
 
 
 
 # Frequency of regridding at each level and thresholds on the tagging
 # Need one for each level except the top one, ie max_level items
 # Generally you do not need to regrid frequently on every level
-# Level Regridding:   0   1   2   3   4   5
-regrid_interval   =  50  25   5   5   5   5
-regrid_thresholds = 0.1 0.1 0.1 0.1 0.1 0.1
+# Level Regridding:   0   1   2   3   4
+regrid_interval   =  50  25   5   5   5
+regrid_thresholds = 0.1 0.1 0.1 0.1 0.1
 
 # Max and min box sizes
 max_box_size = 16
@@ -120,7 +121,7 @@ nonzero_asymptotic_values = 1.0 1.0 1.0 1.0 1.0
 # Evolution parameters
 
 # dt will be dx*dt_multiplier on each grid level
-dt_multiplier = 0.01
+dt_multiplier = 0.005
 stop_time = 10.0
 max_steps = 400
 
