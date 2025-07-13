@@ -1,3 +1,692 @@
+Directory structure:
+└── nikchik-coder-grchombo/
+    ├── README.md
+    ├── CITATION.cff
+    ├── GNUmakefile
+    ├── GRChombo_context.txt
+    ├── LICENSE
+    ├── run_clang_format
+    ├── .clang-format
+    ├── .pre-commit-config.yaml
+    ├── Animation/
+    │   ├── README.md
+    │   ├── compute_and_plot_hamiltonian.py
+    │   ├── corrected_animate.py
+    │   ├── corrected_plot.py
+    │   ├── create_animation.py
+    │   ├── demo_embedding.py
+    │   ├── h
+    │   ├── plot.py
+    │   ├── plot_grav_waves.py
+    │   ├── plot_gravitational_waves.py
+    │   ├── plot_hamiltonian.py
+    │   ├── requirements.txt
+    │   ├── view_gw_plots.py
+    │   ├── view_hdf5_contents.py
+    │   ├── wormhole_embedding_diagram.py
+    │   ├── embedding_animation/
+    │   │   └── animation_info.txt
+    │   ├── KerrBH_animations/
+    │   │   └── run_20250712_124933/
+    │   │       └── animation_info.txt
+    │   └── wormhole_animation/
+    │       └── animation_info.txt
+    ├── Doxygen/
+    │   ├── README
+    │   ├── doxygen_config
+    │   └── title_page.md
+    ├── Examples/
+    │   ├── BinaryBH/
+    │   │   ├── README.md
+    │   │   ├── BinaryBHLevel.cpp
+    │   │   ├── BinaryBHLevel.hpp
+    │   │   ├── DiagnosticVariables.hpp
+    │   │   ├── GNUmakefile
+    │   │   ├── Main_BinaryBH.cpp
+    │   │   ├── params.txt
+    │   │   ├── params_two_punctures.txt
+    │   │   ├── params_very_cheap.txt
+    │   │   ├── SimulationParameters.hpp
+    │   │   ├── TPAMR.hpp
+    │   │   └── UserVariables.hpp
+    │   ├── KerrBH/
+    │   │   ├── README.md
+    │   │   ├── DiagnosticVariables.hpp
+    │   │   ├── GNUmakefile
+    │   │   ├── KerrBHLevel.cpp
+    │   │   ├── KerrBHLevel.hpp
+    │   │   ├── Main_KerrBH.cpp
+    │   │   ├── params.txt
+    │   │   ├── params_cheap.txt
+    │   │   ├── SimulationParameters.hpp
+    │   │   └── UserVariables.hpp
+    │   ├── ScalarFieldBH/
+    │   │   ├── CustomExtraction.hpp
+    │   │   ├── DiagnosticVariables.hpp
+    │   │   ├── GNUmakefile
+    │   │   ├── InitialScalarData.hpp
+    │   │   ├── Main_ScalarField.cpp
+    │   │   ├── params.txt
+    │   │   ├── Potential.hpp
+    │   │   ├── ScalarFieldLevel.cpp
+    │   │   ├── ScalarFieldLevel.hpp
+    │   │   ├── SimulationParameters.hpp
+    │   │   ├── UserVariables.hpp
+    │   │   └── GRTresna_restart_setup/
+    │   │       ├── README.md
+    │   │       ├── params_HR.txt
+    │   │       ├── params_LR.txt
+    │   │       └── plot_restart.py
+    │   ├── ScalarFieldCosmo/
+    │   │   ├── ConstraintsExtraction.hpp
+    │   │   ├── CosmoDiagnostics.hpp
+    │   │   ├── CosmoDiagnostics.impl.hpp
+    │   │   ├── CustomExtraction.hpp
+    │   │   ├── DiagnosticVariables.hpp
+    │   │   ├── GNUmakefile
+    │   │   ├── InitialK.hpp
+    │   │   ├── InitialScalarData.hpp
+    │   │   ├── Main_ScalarFieldCosmo.cpp
+    │   │   ├── params.txt
+    │   │   ├── params_cheap.txt
+    │   │   ├── plot.py
+    │   │   ├── Potential.hpp
+    │   │   ├── ScalarFieldCosmoLevel.cpp
+    │   │   ├── ScalarFieldCosmoLevel.hpp
+    │   │   ├── SimulationParameters.hpp
+    │   │   ├── UserVariables.hpp
+    │   │   └── GRTresna_restart_setup/
+    │   │       ├── README.md
+    │   │       ├── params_HR.txt
+    │   │       ├── params_LR.txt
+    │   │       └── plot_restart.py
+    │   ├── Wormhole_MT/
+    │   │   ├── README.md
+    │   │   ├── DiagnosticVariables.hpp
+    │   │   ├── GNUmakefile
+    │   │   ├── Main_Wormhole_collapse.cpp
+    │   │   ├── params.txt
+    │   │   ├── params_cheap.txt
+    │   │   ├── SimulationParameters.hpp
+    │   │   ├── UserVariables.hpp
+    │   │   ├── Wormhole.hpp
+    │   │   ├── Wormhole.impl.hpp
+    │   │   ├── WormholeLevel.cpp
+    │   │   └── WormholeLevel.hpp
+    │   └── Wormhole_S/
+    │       ├── README.md
+    │       ├── DiagnosticVariables.hpp
+    │       ├── GNUmakefile
+    │       ├── Main_Wormhole_collapse.cpp
+    │       ├── params.txt
+    │       ├── params_cheap.txt
+    │       ├── SimulationParameters.hpp
+    │       ├── UserVariables.hpp
+    │       ├── Wormhole_collapse.hpp
+    │       ├── Wormhole_collapse.impl.hpp
+    │       ├── WormholeLevel.cpp
+    │       └── WormholeLevel.hpp
+    ├── Installation/
+    │   └── README.md
+    ├── InstallNotes/
+    │   └── MakeDefsLocalExamples/
+    │       ├── Archer.Make.defs.local
+    │       ├── argo.Make.defs.local
+    │       ├── argo.modules.sh
+    │       ├── athena-modules.sh
+    │       ├── athena.Make.defs.local
+    │       ├── Cartesius-modules.sh
+    │       ├── Cartesius.Make.defs.local
+    │       ├── cineca_marconi.Make.defs.local
+    │       ├── cineca_marconi.modules.sh
+    │       ├── Cosma7-Durham-modules.sh
+    │       ├── Cosma7-Durham.Make.defs.local
+    │       ├── Cosma8-Durham-modules.sh
+    │       ├── Cosma8-Durham.Make.defs.local
+    │       ├── cosmos.Make.defs.local
+    │       ├── CSD3-Icelake-Intel-modules.sh
+    │       ├── CSD3-Icelake-Intel.Make.defs.local
+    │       ├── CSD3-KNL-GCC.Make.defs.local
+    │       ├── CSD3-KNL-Intel.Make.defs.local
+    │       ├── CSD3-Skylake-GCC-modules.sh
+    │       ├── CSD3-Skylake-GCC.Make.defs.local
+    │       ├── CSD3-Skylake-Intel-modules.sh
+    │       ├── CSD3-Skylake-Intel.Make.defs.local
+    │       ├── Dial-Leicester.Make.defs.local
+    │       ├── docker_hpc-base-stretch.Make.defs.local
+    │       ├── fawcett-modules.sh
+    │       ├── fawcett.Make.defs.local
+    │       ├── finisterrae.Make.defs.local
+    │       ├── glamdring-debug.Make.defs.local
+    │       ├── gwdg.Make.defs.local
+    │       ├── hdf5_cmake_configure.sh
+    │       ├── intel-classic-no-hdf5-minimal.Make.defs.local
+    │       ├── Mac-Catalina-GCC.Make.defs.local
+    │       ├── Mac-Monterey.Make.defs.local
+    │       ├── MN4.Make.defs.local
+    │       ├── nesi-pan.Make.defs.local
+    │       ├── SupermucNG.Make.defs.local
+    │       ├── TACC-Frontera-modules.sh
+    │       ├── TACC-Frontera.Make.defs.local
+    │       ├── TACC-Stampede2-KNL.Make.defs.local
+    │       ├── TACC-Stampede2-modules.sh
+    │       ├── TACC-Stampede2-Skylake.Make.defs.local
+    │       ├── ubuntu-clang-nompi.Make.defs.local
+    │       ├── ubuntu-clang.Make.defs.local
+    │       ├── ubuntu-gcc-nompi.Make.defs.local
+    │       └── ubuntu-gcc.Make.defs.local
+    ├── Source/
+    │   ├── AMRInterpolator/
+    │   │   ├── AMRInterpolator.hpp
+    │   │   ├── AMRInterpolator.impl.hpp
+    │   │   ├── CylindricalExtraction.hpp
+    │   │   ├── CylindricalGeometry.hpp
+    │   │   ├── Derivative.hpp
+    │   │   ├── DerivativeSetup.hpp
+    │   │   ├── IntegrationMethod.hpp
+    │   │   ├── IntegrationMethodSetup.hpp
+    │   │   ├── InterpolationQuery.hpp
+    │   │   ├── InterpSource.hpp
+    │   │   ├── Lagrange.hpp
+    │   │   ├── Lagrange.impl.hpp
+    │   │   ├── MPIContext.hpp
+    │   │   ├── MPIContext.impl.hpp
+    │   │   ├── MPILayout.hpp
+    │   │   ├── MPILayout.impl.hpp
+    │   │   ├── QuinticConvolution.hpp
+    │   │   ├── QuinticConvolution.impl.hpp
+    │   │   ├── SimpleArrayBox.hpp
+    │   │   ├── SimpleInterpSource.hpp
+    │   │   ├── SphericalExtraction.hpp
+    │   │   ├── SphericalGeometry.hpp
+    │   │   ├── SphericalGeometryUniform.hpp
+    │   │   ├── SurfaceExtraction.hpp
+    │   │   └── SurfaceExtraction.impl.hpp
+    │   ├── ApparentHorizonFinder/
+    │   │   ├── AHDerivData.hpp
+    │   │   ├── AHFinder.hpp
+    │   │   ├── AHFinder.impl.hpp
+    │   │   ├── AHFunctionDefault.hpp
+    │   │   ├── AHFunctions.hpp
+    │   │   ├── AHGeometryData.hpp
+    │   │   ├── AHInitialGuess.hpp
+    │   │   ├── AHInterpolation.hpp
+    │   │   ├── AHInterpolation.impl.hpp
+    │   │   ├── AHParams.hpp
+    │   │   ├── AHSphericalGeometry.hpp
+    │   │   ├── AHSphericalGeometryUniform.hpp
+    │   │   ├── AHStringGeometry.hpp
+    │   │   ├── AHVarsData.hpp
+    │   │   ├── ApparentHorizon.hpp
+    │   │   ├── ApparentHorizon.impl.hpp
+    │   │   ├── PETScAHSolver.hpp
+    │   │   ├── PETScAHSolver.impl.hpp
+    │   │   ├── PETScCommunicator.cpp
+    │   │   └── PETScCommunicator.hpp
+    │   ├── BlackHoles/
+    │   │   ├── BHAMR.hpp
+    │   │   ├── PunctureTracker.cpp
+    │   │   └── PunctureTracker.hpp
+    │   ├── BoxUtils/
+    │   │   ├── AMRReductions.hpp
+    │   │   ├── AMRReductions.impl.hpp
+    │   │   ├── BoxLoops.hpp
+    │   │   ├── BoxLoops.impl.hpp
+    │   │   ├── BoxPointers.hpp
+    │   │   ├── Cell.hpp
+    │   │   ├── Cell.impl.hpp
+    │   │   ├── CellIndex.hpp
+    │   │   ├── ComputeModGrad.hpp
+    │   │   ├── ComputePack.hpp
+    │   │   ├── FourthOrderDerivatives.hpp
+    │   │   ├── NanCheck.hpp
+    │   │   ├── SetValue.hpp
+    │   │   └── SixthOrderDerivatives.hpp
+    │   ├── CCZ4/
+    │   │   ├── ADMConformalVars.hpp
+    │   │   ├── BSSNVars.hpp
+    │   │   ├── CCZ4Geometry.hpp
+    │   │   ├── CCZ4RHS.hpp
+    │   │   ├── CCZ4RHS.impl.hpp
+    │   │   ├── CCZ4UserVariables.hpp
+    │   │   ├── CCZ4Vars.hpp
+    │   │   ├── Constraints.hpp
+    │   │   ├── Constraints.impl.hpp
+    │   │   ├── GammaCalculator.hpp
+    │   │   ├── IntegratedMovingPunctureGauge.hpp
+    │   │   ├── MovingPunctureGauge.hpp
+    │   │   ├── NewConstraints.hpp
+    │   │   ├── NewConstraints.impl.hpp
+    │   │   ├── PositiveChiAndAlpha.hpp
+    │   │   ├── TraceARemoval.hpp
+    │   │   ├── Weyl4.hpp
+    │   │   ├── Weyl4.impl.hpp
+    │   │   └── CCZ4.hpp -> CCZ4RHS.hpp
+    │   ├── Cosmology/
+    │   │   ├── CosmoAMR.hpp
+    │   │   └── CosmoMovingPunctureGauge.hpp
+    │   ├── GRChomboCore/
+    │   │   ├── BoundaryConditions.cpp
+    │   │   ├── BoundaryConditions.hpp
+    │   │   ├── ChomboParameters.hpp
+    │   │   ├── DefaultLevelFactory.hpp
+    │   │   ├── EmptyDiagnosticVariables.hpp
+    │   │   ├── GRAMR.cpp
+    │   │   ├── GRAMR.hpp
+    │   │   ├── GRAMRLevel.cpp
+    │   │   ├── GRAMRLevel.hpp
+    │   │   ├── GRLevelData.cpp
+    │   │   ├── GRLevelData.hpp
+    │   │   ├── SetupFunctions.hpp
+    │   │   ├── SimulationParametersBase.hpp
+    │   │   ├── UserVariables.inc.hpp
+    │   │   └── VariableType.hpp
+    │   ├── InitialConditions/
+    │   │   ├── BlackHoles/
+    │   │   │   ├── BinaryBH.hpp
+    │   │   │   ├── BinaryBH.impl.hpp
+    │   │   │   ├── BoostedBH.hpp
+    │   │   │   ├── BoostedBH.impl.hpp
+    │   │   │   ├── KerrBH.hpp
+    │   │   │   ├── KerrBH.impl.hpp
+    │   │   │   ├── TwoPuncturesInitialData.hpp
+    │   │   │   └── TwoPuncturesInitialData.impl.hpp
+    │   │   └── ScalarFields/
+    │   │       ├── ScalarBubble.hpp
+    │   │       └── ScalarBubble.impl.hpp
+    │   ├── Matter/
+    │   │   ├── ChiRelaxation.hpp
+    │   │   ├── ChiRelaxation.impl.hpp
+    │   │   ├── DefaultPotential.hpp
+    │   │   ├── EMTensor.hpp
+    │   │   ├── EMTensor.impl.hpp
+    │   │   ├── MatterCCZ4RHS.hpp
+    │   │   ├── MatterCCZ4RHS.impl.hpp
+    │   │   ├── MatterConstraints.hpp
+    │   │   ├── MatterConstraints.impl.hpp
+    │   │   ├── MatterWeyl4.hpp
+    │   │   ├── MatterWeyl4.impl.hpp
+    │   │   ├── NewMatterConstraints.hpp
+    │   │   ├── NewMatterConstraints.impl.hpp
+    │   │   ├── ScalarField.hpp
+    │   │   ├── ScalarField.impl.hpp
+    │   │   └── MatterCCZ4.hpp -> MatterCCZ4RHS.hpp
+    │   ├── simd/
+    │   │   ├── simd.hpp
+    │   │   ├── simd_base.hpp
+    │   │   ├── simdify.hpp
+    │   │   ├── arm/
+    │   │   │   ├── arm.hpp
+    │   │   │   ├── neon.hpp
+    │   │   │   └── sve.hpp
+    │   │   └── x64/
+    │   │       ├── avx.hpp
+    │   │       ├── avx512.hpp
+    │   │       ├── sse.hpp
+    │   │       └── x64.hpp
+    │   ├── TaggingCriteria/
+    │   │   ├── ChiAndPhiTaggingCriterion.hpp
+    │   │   ├── ChiExtractionTaggingCriterion.hpp
+    │   │   ├── ChiPunctureExtractionTaggingCriterion.hpp
+    │   │   ├── ChiTaggingCriterion.hpp
+    │   │   ├── CosmoHamTaggingCriterion.hpp
+    │   │   ├── FixedGridsTaggingCriterion.hpp
+    │   │   └── PhiAndKTaggingCriterion.hpp
+    │   └── utils/
+    │       ├── AlwaysAssert.hpp
+    │       ├── AlwaysInline.hpp
+    │       ├── ArrayTools.hpp
+    │       ├── Combinatorics.hpp
+    │       ├── Coordinates.hpp
+    │       ├── CoordinateTransformations.hpp
+    │       ├── DebuggingTools.hpp
+    │       ├── DimensionDefinitions.hpp
+    │       ├── FilesystemTools.hpp
+    │       ├── GRInterval.hpp
+    │       ├── GRParmParse.hpp
+    │       ├── MultiLevelTask.hpp
+    │       ├── SmallDataIO.cpp
+    │       ├── SmallDataIO.hpp
+    │       ├── SmallDataIOReader.cpp
+    │       ├── SmallDataIOReader.hpp
+    │       ├── SphericalHarmonics.hpp
+    │       ├── Tensor.hpp
+    │       ├── TensorAlgebra.hpp
+    │       ├── VarsTools.hpp
+    │       └── WeylExtraction.hpp
+    ├── Tests/
+    │   ├── AMRInterpolatorTest/
+    │   │   ├── AMRInterpolatorTest.cpp
+    │   │   ├── AMRInterpolatorTest.inputs
+    │   │   ├── GNUmakefile
+    │   │   ├── InterpolatorTestLevel.hpp
+    │   │   ├── Polynomial.hpp
+    │   │   ├── SimulationParameters.hpp
+    │   │   └── UserVariables.hpp
+    │   ├── ApparentHorizonFinderTest2D/
+    │   │   ├── AHTest2DFunction.hpp
+    │   │   ├── ApparentHorizonTest2D.cpp
+    │   │   ├── ApparentHorizonTest2D.inputs
+    │   │   ├── ApparentHorizonTest2DLevel.hpp
+    │   │   ├── GNUmakefile
+    │   │   ├── SimulationParameters.hpp
+    │   │   └── UserVariables.hpp
+    │   ├── ApparentHorizonFinderTest3D/
+    │   │   ├── ApparentHorizonTest3D.cpp
+    │   │   ├── ApparentHorizonTest3D.inputs
+    │   │   ├── ApparentHorizonTest3DLevel.hpp
+    │   │   ├── GNUmakefile
+    │   │   ├── SimulationParameters.hpp
+    │   │   └── UserVariables.hpp
+    │   ├── BSSNMatterTest/
+    │   │   ├── BSSNMatterTest.cpp
+    │   │   ├── GNUmakefile
+    │   │   ├── GRBSSNChomboF.ChF
+    │   │   ├── Potential.hpp
+    │   │   └── UserVariables.hpp
+    │   ├── CCZ4GeometryUnitTests/
+    │   │   ├── CCZ4GeometryUnitTest.cpp
+    │   │   ├── GNUmakefile
+    │   │   ├── Mathematica_comparison.nb
+    │   │   └── values1.hpp
+    │   ├── CCZ4Test/
+    │   │   ├── CCZ4Test.cpp
+    │   │   ├── GNUmakefile
+    │   │   ├── GRBSSNChomboF.ChF
+    │   │   └── UserVariables.hpp
+    │   ├── ConstraintTest/
+    │   │   ├── ConstraintTest.cpp
+    │   │   ├── ConstraintTestF.ChF
+    │   │   ├── GNUmakefile
+    │   │   └── UserVariables.hpp
+    │   ├── CoordinateTransformationsTest/
+    │   │   ├── CoordinateTransformationsTest.cpp
+    │   │   └── GNUmakefile
+    │   ├── DerivativeUnitTests/
+    │   │   ├── DerivativeTestsCompute.hpp
+    │   │   ├── DerivativeUnitTests.cpp
+    │   │   ├── GNUmakefile
+    │   │   └── UserVariables.hpp
+    │   ├── InterpolatorTest/
+    │   │   ├── GNUmakefile
+    │   │   ├── InterpolatorTest.cpp
+    │   │   ├── SimulationParameters.hpp
+    │   │   └── UserVariables.hpp
+    │   ├── MatterWeyl4Test/
+    │   │   ├── GNUmakefile
+    │   │   ├── GravWavDecF.ChF
+    │   │   ├── MatterWeyl4Test.cpp
+    │   │   └── UserVariables.hpp
+    │   ├── PositiveChiAndAlphaUnitTest/
+    │   │   ├── GNUmakefile
+    │   │   ├── PositiveChiAndAlphaUnitTest.cpp
+    │   │   └── UserVariables.hpp
+    │   ├── SetValueUnitTest/
+    │   │   ├── GNUmakefile
+    │   │   ├── SetValueUnitTest.cpp
+    │   │   └── UserVariables.hpp
+    │   ├── SimdFunctionsUnitTests/
+    │   │   ├── GNUmakefile
+    │   │   └── SimdFunctionsUnitTest.cpp
+    │   ├── SphericalExtractionTest/
+    │   │   ├── GNUmakefile
+    │   │   ├── SetHarmonic.hpp
+    │   │   ├── SetHarmonic.impl.hpp
+    │   │   ├── SimulationParameters.hpp
+    │   │   ├── SphericalExtractionTest.cpp
+    │   │   ├── SphericalExtractionTest.inputs
+    │   │   ├── SphericalExtractionTestLevel.hpp
+    │   │   └── UserVariables.hpp
+    │   ├── SphericalExtractionUniformTest/
+    │   │   ├── GNUmakefile
+    │   │   ├── SphericalExtractionUniformTest.cpp
+    │   │   ├── SphericalExtractionUniformTest.inputs
+    │   │   ├── SetHarmonic.hpp -> SetHarmonic.hpp
+    │   │   ├── SetHarmonic.impl.hpp -> SetHarmonic.impl.hpp
+    │   │   ├── SimulationParameters.hpp -> SimulationParameters.hpp
+    │   │   ├── SphericalExtractionUniformTestLevel.hpp -> SphericalExtractionTestLevel.hpp
+    │   │   └── UserVariables.hpp -> UserVariables.hpp
+    │   ├── SphericalHarmonicTest/
+    │   │   ├── GNUmakefile
+    │   │   ├── HarmonicTest.hpp
+    │   │   ├── HarmonicTest.impl.hpp
+    │   │   ├── SphericalHarmonicTest.cpp
+    │   │   └── UserVariables.hpp
+    │   └── VariableStoreTest/
+    │       ├── GNUmakefile
+    │       ├── UserVariables.hpp
+    │       └── VariableStoreTest.cpp
+    └── .github/
+        ├── dependabot.yml
+        └── workflows/
+            ├── build-doxygen.yml
+            ├── clang-format.yml
+            ├── clang-tests.yml
+            ├── gcc-tests.yml
+            └── intel-classic-tests.yml
+
+
+Files Content:
+
+(Files content cropped to 300k characters, download full ingest to see more)
+================================================
+FILE: README.md
+================================================
+# GRChombo
+
+[![status](https://joss.theoj.org/papers/af52e7f1b7637bfa68818fde7c1a34de/status.svg)](https://joss.theoj.org/papers/af52e7f1b7637bfa68818fde7c1a34de)
+[![DOI](https://zenodo.org/badge/118786602.svg)](https://zenodo.org/badge/latestdoi/118786602)
+
+GRChombo is an open-source code for numerical relativity simulations.
+It is developed and maintained by a collaboration of numerical relativists with a
+wide range of research interests, from early universe cosmology to astrophysics
+and mathematical general relativity, and has been used in many papers since its
+first release in 2015.
+
+GRChombo is written entirely in C++14, using hybrid MPI/OpenMP parallelism and
+vector intrinsics to achieve good performance on the latest architectures.
+Furthermore, it makes use of the Chombo library for adaptive mesh refinement
+to allow automatic increasing and decreasing of the grid resolution in regions
+of arbitrary shape and topology.
+
+Please visit www.grchombo.org for the full list of developers and their
+institutions, a list of publications using GRChombo, and some videos.
+
+## Examples
+
+GRChombo includes several working examples to help you get started with different types of simulations:
+
+- **BinaryBH** - Binary black hole merger simulations
+- **KerrBH** - Single Kerr black hole evolution  
+- **ScalarFieldBH** - Black holes with scalar field matter
+- **ScalarFieldCosmo** - Cosmological scalar field simulations
+- **Wormhole_collapse** - Traversable wormhole collapse dynamics
+
+Each example includes parameter files for both quick testing (`params_cheap.txt`) and full simulations (`params.txt`), along with detailed README files explaining the physics and build process.
+
+## Getting started
+Detailed installation instructions and usage examples are available in
+our [wiki](https://github.com/GRChombo/GRChombo/wiki), with the home page giving guidance on where to start.
+
+## Contributing
+We welcome feedback, bug reports, and contributions. Please consult the [wiki](https://github.com/GRChombo/GRChombo/wiki)
+for our coding style and testing policy before filing a pull request.
+
+## License
+GRChombo is licensed under the BSD 3-Clause License. Please see LICENSE for details.
+
+## Citation
+If you use GRChombo as part of a paper, please cite our JOSS publication which
+you can do using the following BibTeX entry:
+
+```
+@article{Andrade2021,
+  doi = {10.21105/joss.03703},
+  url = {https://doi.org/10.21105/joss.03703},
+  year = {2021},
+  publisher = {The Open Journal},
+  volume = {6},
+  number = {68},
+  pages = {3703},
+  author = {Tomas Andrade and Llibert Areste Salo and Josu C. Aurrekoetxea and Jamie Bamber and Katy Clough and Robin Croft and Eloy de Jong and Amelia Drew and Alejandro Duran and Pedro G. Ferreira and Pau Figueras and Hal Finkel and Tiago Fran\c{c}a and Bo-Xuan Ge and Chenxia Gu and Thomas Helfer and Juha Jäykkä and Cristian Joana and Markus Kunesch and Kacper Kornet and Eugene A. Lim and Francesco Muia and Zainab Nazari and Miren Radia and Justin Ripley and Paul Shellard and Ulrich Sperhake and Dina Traykova and Saran Tunyasuvunakool and Zipeng Wang and James Y. Widdicombe and Kaze Wong},
+  title = {GRChombo: An adaptable numerical relativity code for fundamental physics},
+  journal = {Journal of Open Source Software}
+}
+```
+
+
+
+================================================
+FILE: CITATION.cff
+================================================
+cff-version: 1.2.0
+message: "If you use GRChombo as part of a paper, please cite our JOSS
+publication"
+title: "GRChombo"
+authors:
+- name: "The GRChombo collaboration"
+url: "https://www.grchombo.org/"
+preferred-citation:
+  type: article
+  authors:
+  - family-names: "Andrade"
+    given-names: "Tomas"
+  - family-names: "Salo"
+    given-names: "Llibert Areste"
+  - family-names: "Aurrekoetxea"
+    given-names: "Josu C."
+  - family-names: "Bamber"
+    given-names: "Jamie"
+  - family-names: "Clough"
+    given-names: "Katy"
+  - family-names: "Croft"
+    given-names: "Robin"
+  - family-names: "de Jong"
+    given-names: "Eloy"
+  - family-names: "Drew"
+    given-names: "Amelia"
+  - family-names: "Duran"
+    given-names: "Alejandro"
+  - family-names: "Ferreira"
+    given-names: "Pedro G."
+  - family-names: "Figueras"
+    given-names: "Pau"
+  - family-names: "Finkel"
+    given-names: "Hal"
+  - family-names: "França"
+    given-names: "Tiago"
+  - family-names: "Ge"
+    given-names: "Bo-Xuan"
+  - family-names: "Gu"
+    given-names: "Chenxia"
+  - family-names: "Helfer"
+    given-names: "Thomas"
+  - family-names: "Jäykkä"
+    given-names: "Juha"
+  - family-names: "Joana"
+    given-names: "Cristian"
+  - family-names: "Kunesch"
+    given-names: "Markus"
+  - family-names: "Kornet"
+    given-names: "Kacper"
+  - family-names: "Lim"
+    given-names: "Eugene A."
+  - family-names: "Muia"
+    given-names: "Francesco"
+  - family-names: "Nazari"
+    given-names: "Zainab"
+  - family-names: "Radia"
+    given-names: "Miren"
+  - family-names: "Ripley"
+    given-names: "Justin"
+  - family-names: "Shellard"
+    given-names: "Paul"
+  - family-names: "Sperhake"
+    given-names: "Ulrich"
+  - family-names: "Traykova"
+    given-names: "Dina"
+  - family-names: "Tunyasuvunakool"
+    given-names: "Saran"
+  - family-names: "Wang"
+    given-names: "Zipeng"
+  - family-names: "Widdicombe"
+    given-names: "James Y."
+  - family-names: "Wong"
+    given-names: "Kaze"
+  doi: "10.21105/joss.03703"
+  journal: "Journal of Open Source Software"
+  title: "GRChombo: An adaptable numerical relativity code for fundamental physics"
+  issue: 68
+  volume: 6
+  start: 3703
+  month: 12
+  year: 2021
+
+
+================================================
+FILE: GNUmakefile
+================================================
+define SEARCH_FOR_MAKE
+$(wildcard $1/*/GNUmakefile) $(wildcard $1/*/makefile) $(wildcard $1/*/Makefile)
+endef
+
+TestDirsWithGNUmakefile := $(call SEARCH_FOR_MAKE, Tests)
+TestDirs := $(dir $(TestDirsWithGNUmakefile))
+RunTestDirs := $(TestDirs:%=run-%)
+ExampleDirsWithGNUmakefile := $(call SEARCH_FOR_MAKE, Examples)
+ExampleDirs := $(dir $(ExampleDirsWithGNUmakefile))
+CleanTestDirs := $(TestDirs:%=clean-%)
+CleanExampleDirs := $(ExampleDirs:%=clean-%)
+RealCleanTestDirs := $(TestDirs:%=realclean-%)
+RealCleanExampleDirs := $(ExampleDirs:%=realclean-%)
+
+.PHONY: all run examples clean realclean $(TestDirs) $(ExampleDirs)
+
+export GRCHOMBO_SOURCE = $(shell pwd)/Source
+
+ECHO?=@ # set this to null on the command line to increase verbosity
+
+test: $(TestDirs)
+
+run: test $(RunTestDirs)
+
+examples: $(ExampleDirs)
+
+all: run examples
+
+clean: $(CleanTestDirs) $(CleanExampleDirs)
+
+realclean: $(RealCleanTestDirs) $(RealCleanExampleDirs)
+
+$(TestDirs):
+	$(info ################# Making test $@ #################)
+	$(ECHO)$(MAKE) -C $@ --no-print-directory all
+
+$(RunTestDirs):
+	$(info ################# Running test $@ #################)
+	$(ECHO)$(MAKE) -C $(@:run-%=%) --no-print-directory run
+
+$(ExampleDirs):
+	$(info ################# Making example $@ #################)
+	$(ECHO)$(MAKE) -C $@ --no-print-directory all
+
+$(CleanTestDirs):
+	$(ECHO)$(MAKE) -C $(@:clean-%=%) --no-print-directory clean NODEPENDS=TRUE
+
+$(CleanExampleDirs):
+	$(ECHO)$(MAKE) -C $(@:clean-%=%) --no-print-directory clean NODEPENDS=TRUE
+
+$(RealCleanTestDirs):
+	$(ECHO)$(MAKE) -C $(@:realclean-%=%) --no-print-directory realclean NODEPENDS=TRUE
+
+$(RealCleanExampleDirs):
+	$(ECHO)$(MAKE) -C $(@:realclean-%=%) --no-print-directory realclean NODEPENDS=TRUE
+
+
+
+================================================
+FILE: GRChombo_context.txt
+================================================
 (Files content cropped to 300k characters, download full ingest to see more)
 ================================================
 FILE: README.md
@@ -8306,180 +8995,9 @@ void CosmoLevel::postRestart()
         if (m_level == write_out_level)
         {
             // AMRReductions for diagnostic variables
-            AMRReductions<VariableType::diagnostic> amr_reductions_diagnostic(
-                m_gr_amr);
-            double L2_Ham = amr_reductions_diagnostic.norm(c_Ham);
-            double L2_Mom = amr_reductions_diagnostic.norm(c_Mom);
+            AMRReductions<VariableType::diagnostic
 
-            // only on rank zero write out the result
-            if (procID() == 0)
-            {
-                pout()
-                    << "The initial norm of the constraint vars on restart is "
-                    << L2_Ham << " for the Hamiltonian constraint and "
-                    << L2_Mom << " for the momentum constraints" << endl;
-            }
 
-            // set up the query and execute it
-            int num_points = 3 * m_p.ivN[0];
-            ConstraintsExtraction constraints_extraction(
-                c_Ham, c_Mom, num_points, m_p.L, m_p.center, m_dt, m_time);
-            constraints_extraction.execute_query(
-                &interpolator, m_p.data_path + "constraints_lineout");
-        }
-    }
-}
-
-#ifdef CH_USE_HDF5
-// Things to do before outputting a checkpoint file
-void CosmoLevel::prePlotLevel()
-{
-    fillAllGhosts();
-    Potential potential(m_p.potential_params);
-    ScalarFieldWithPotential scalar_field(potential);
-    BoxLoops::loop(
-        MatterConstraints<ScalarFieldWithPotential>(
-            scalar_field, m_dx, m_p.G_Newton, c_Ham, Interval(c_Mom, c_Mom)),
-        m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
-    CosmoDiagnostics<ScalarFieldWithPotential> cosmo_diagnostics(
-        scalar_field, m_dx, m_p.G_Newton);
-    BoxLoops::loop(cosmo_diagnostics, m_state_new, m_state_diagnostics,
-                   EXCLUDE_GHOST_CELLS);
-}
-#endif
-
-// Things to do in RHS update, at each RK4 step
-void CosmoLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
-                                 const double a_time)
-{
-    // Enforce trace free A_ij and positive chi and alpha
-    BoxLoops::loop(
-        make_compute_pack(TraceARemoval(),
-                          PositiveChiAndAlpha(m_p.min_chi, m_p.min_lapse)),
-        a_soln, a_soln, INCLUDE_GHOST_CELLS);
-
-    // Calculate MatterCCZ4 right hand side with matter_t = ScalarField
-    Potential potential(m_p.potential_params);
-    ScalarFieldWithPotential scalar_field(potential);
-    CosmoMovingPunctureGauge cosmo_moving_puncture_gauge(m_p.ccz4_params);
-    cosmo_moving_puncture_gauge.set_K_mean(m_cosmo_amr.get_K_mean());
-    MatterCCZ4RHS<ScalarFieldWithPotential, CosmoMovingPunctureGauge,
-                  FourthOrderDerivatives>
-        my_ccz4_matter(scalar_field, m_p.ccz4_params, m_dx, m_p.sigma,
-                       m_p.formulation, m_p.G_Newton);
-    BoxLoops::loop(my_ccz4_matter, a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
-}
-
-// Things to do at ODE update, after soln + rhs
-void CosmoLevel::specificUpdateODE(GRLevelData &a_soln,
-                                   const GRLevelData &a_rhs, Real a_dt)
-{
-    // Enforce trace free A_ij
-    BoxLoops::loop(TraceARemoval(), a_soln, a_soln, INCLUDE_GHOST_CELLS);
-}
-
-void CosmoLevel::preTagCells()
-{
-    // Pre tagging - fill ghost cells and calculate Ham terms
-    fillAllGhosts();
-    Potential potential(m_p.potential_params);
-    ScalarFieldWithPotential scalar_field(potential);
-    BoxLoops::loop(MatterConstraints<ScalarFieldWithPotential>(
-                       scalar_field, m_dx, m_p.G_Newton, c_Ham,
-                       Interval(c_Mom, c_Mom), c_Ham_abs_sum,
-                       Interval(c_Mom_abs_sum, c_Mom_abs_sum)),
-                   m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
-    CosmoDiagnostics<ScalarFieldWithPotential> cosmo_diagnostics(
-        scalar_field, m_dx, m_p.G_Newton);
-    BoxLoops::loop(cosmo_diagnostics, m_state_new, m_state_diagnostics,
-                   EXCLUDE_GHOST_CELLS);
-}
-
-void CosmoLevel::computeTaggingCriterion(
-    FArrayBox &tagging_criterion, const FArrayBox &current_state,
-    const FArrayBox &current_state_diagnostics)
-{
-    double rho_mean = m_cosmo_amr.get_rho_mean();
-    BoxLoops::loop(CosmoHamTaggingCriterion(m_dx, m_p.tagging_center,
-                                            m_p.tagging_radius, rho_mean),
-                   current_state_diagnostics, tagging_criterion);
-}
-void CosmoLevel::specificPostTimeStep()
-{
-    int min_level = 0;
-    bool calculate_diagnostics = at_level_timestep_multiple(min_level);
-    bool first_step = (m_time == 0.);
-
-    // No need to evaluate the diagnostics more frequently than every coarse
-    // timestep, but must happen on every level (not just level zero or data
-    // will not be populated on finer levels)
-
-    if (calculate_diagnostics)
-    {
-        fillAllGhosts();
-        Potential potential(m_p.potential_params);
-        ScalarFieldWithPotential scalar_field(potential);
-        BoxLoops::loop(MatterConstraints<ScalarFieldWithPotential>(
-                           scalar_field, m_dx, m_p.G_Newton, c_Ham,
-                           Interval(c_Mom, c_Mom), c_Ham_abs_sum,
-                           Interval(c_Mom_abs_sum, c_Mom_abs_sum)),
-                       m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
-        CosmoDiagnostics<ScalarFieldWithPotential> cosmo_diagnostics(
-            scalar_field, m_dx, m_p.G_Newton);
-        BoxLoops::loop(cosmo_diagnostics, m_state_new, m_state_diagnostics,
-                       EXCLUDE_GHOST_CELLS);
-
-        if (m_level == min_level)
-        {
-            // AMRReductions for diagnostic variables
-            AMRReductions<VariableType::diagnostic> amr_reductions_diagnostic(
-                m_cosmo_amr);
-            double phys_vol = amr_reductions_diagnostic.sum(c_sqrt_gamma);
-            double L2_Ham = amr_reductions_diagnostic.norm(c_Ham);
-            double L2_Mom = amr_reductions_diagnostic.norm(c_Mom);
-            double K_total = amr_reductions_diagnostic.sum(c_K_scaled);
-            m_cosmo_amr.set_rho_mean(
-                amr_reductions_diagnostic.sum(c_rho_scaled) / phys_vol);
-            m_cosmo_amr.set_S_mean(amr_reductions_diagnostic.sum(c_S_scaled) /
-                                   phys_vol);
-            m_cosmo_amr.set_K_mean(K_total / phys_vol);
-
-            // AMRReductions for evolution variables
-            AMRReductions<VariableType::evolution> amr_reductions_evolution(
-                m_cosmo_amr);
-
-            double chi_mean = amr_reductions_evolution.sum(c_chi) / phys_vol;
-
-            // Write output file
-            SmallDataIO data_out_file(m_p.data_path + "data_out", m_dt, m_time,
-                                      m_restart_time, SmallDataIO::APPEND,
-                                      first_step);
-            data_out_file.remove_duplicate_time_data();
-            if (first_step)
-            {
-                data_out_file.write_header_line(
-                    {"L^2_Ham", "L^2_Mom", "<chi>", "<rho>", "<K>"});
-            }
-            data_out_file.write_time_data_line({L2_Ham, L2_Mom, chi_mean,
-                                                m_cosmo_amr.get_rho_mean(),
-                                                m_cosmo_amr.get_K_mean()});
-
-            // Use AMR Interpolator and do lineout data extraction
-            // set up an interpolator
-            // pass the boundary params so that we can use symmetries if
-            // applicable
-            AMRInterpolator<Lagrange<4>> interpolator(
-                m_cosmo_amr, m_p.origin, m_p.dx, m_p.boundary_params,
-                m_p.verbosity);
-
-            // this should fill all ghosts including the boundary ones according
-            // to the conditions set in params.txt
-            interpolator.refresh();
-
-            // set up the query and execute it
-            std::array<double, CH_SPACEDIM> extraction_origin = {
-                0., m_p.L / 2, m_p.L / 2}; // specified point {x \in [0,L],y \in
-                   
 
 Directory structure:
 └── grtlcollaboration-grchombo/
@@ -8591,6 +9109,7 @@ Directory structure:
     │       ├── gwdg.Make.defs.local
     │       ├── hdf5_cmake_configure.sh
     │       ├── intel-classic-no-hdf5-minimal.Make.defs.local
+    │       ├── LUMIC.Make.defs.local
     │       ├── Mac-Catalina-GCC.Make.defs.local
     │       ├── Mac-Monterey.Make.defs.local
     │       ├── MN4.Make.defs.local
@@ -17380,3 +17899,5 @@ void CosmoLevel::specificPostTimeStep()
             std::array<double, CH_SPACEDIM> extraction_origin = {
                 0., m_p.L / 2, m_p.L / 2}; // specified point {x \in [0,L],y \in
                    
+
+remember this 
