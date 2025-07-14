@@ -16,7 +16,7 @@ plot_prefix = Wormhole_p_
 checkpoint_interval = 5
 # set to 0 to turn off plot files (except at t=0 and t=stop_time)
 # set to -1 to never ever print plotfiles
-plot_interval = 5
+plot_interval = 1
 num_plot_vars = 2
 plot_vars = chi Ham
 
@@ -36,14 +36,14 @@ print_progress_only_to_rank_0 = 1
 #################################################
 # Initial Data parameters
 # Morris-Thorne Wormhole parameters
-throat_radius = 0.05    # The radius of the wormhole throat, b0
+throat_radius = 1.0    # The radius of the wormhole throat, b0
 redshift_constant = 0.0 # The constant redshift, Phi0. 0 = no tidal forces.
 
 # Initial "squeeze" for collapse
 # A negative amplitude means collapse. Set to 0 for collapse via numerical noise only.
 K_amplitude = -0.5
-K_width = 1.0
-regularization_radius = 0.1
+K_width = 2.0
+regularization_radius = 0.01
 
 center = 16 16 16
 
@@ -59,10 +59,10 @@ center = 16 16 16
 # NB - the N values need to be multiples of the block_factor
 
 N_full = 128
-L_full = 32
+L_full = 64
 
 # Maximum number of times you can regrid above coarsest level
-max_level = 4 # There are (max_level+1) grids, so min is zero
+max_level = 5 # There are (max_level+1) grids, so min is zero
 
 
 
@@ -70,14 +70,14 @@ max_level = 4 # There are (max_level+1) grids, so min is zero
 # Need one for each level except the top one, ie max_level items
 # Generally you do not need to regrid frequently on every level
 # Level Regridding:   0   1   2   3   4
-regrid_interval   =  2   2   2   2   2
-regrid_thresholds = 0.01 0.01 0.01 0.01 0.01
+regrid_interval = 16 8 4 2 2
+regrid_thresholds = 0.05 0.05 0.05 0.05 0.05
 
 # Max and min box sizes
-max_box_size = 16
+max_box_size = 32
 min_box_size = 16
 
-# tag_buffer_size = 3
+tag_buffer_size = 3
 # grid_buffer_size = 8
 # fill_ratio = 0.7
 # num_ghosts = 3
@@ -121,8 +121,8 @@ nonzero_asymptotic_values = 1.0 1.0 1.0 1.0 1.0
 # Evolution parameters
 
 # dt will be dx*dt_multiplier on each grid level
-dt_multiplier = 0.5
-stop_time = 5.0
+dt_multiplier = 0.25
+stop_time = 50.0
 max_steps = 400000
 
 # Spatial derivative order (only affects CCZ4 RHS)

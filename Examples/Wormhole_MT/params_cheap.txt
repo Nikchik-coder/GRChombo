@@ -1,179 +1,113 @@
-# See the wiki page for an explanation of the params!
-# https://github.com/GRChombo/GRChombo/wiki/Guide-to-parameters
+# =========================================================================
+# CHEAP SIMULATION for Wormhole Collapse
+# Goal: Quickly verify that the initial data is correct, the collapse
+# begins, and an apparent horizon forms. Not for scientific results.
+# =========================================================================
 
 #################################################
 # Filesystem parameters
 
-verbosity = 0
+verbosity = 1 # Good for debugging grid setup
 
-# location / naming of output files
-output_path = "/home/nik/GRChombo_runs/Wormhole_Collapse"
-chk_prefix = Wormhole_
-plot_prefix = Wormhole_p_
-# restart_file = Wormhole_000060.3d.hdf5
+# Give this run a unique output path to not overwrite production data
+output_path = "/home/nik/GRChombo_runs/Wormhole_Collapse_Cheap"
+chk_prefix = "Wormhole_cheap_"
+plot_prefix = "Wormhole_p_cheap_"
 
-# HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
-checkpoint_interval = 1
-# set to 0 to turn off plot files (except at t=0 and t=stop_time)
-# set to -1 to never ever print plotfiles
+# Output frequently enough to make a coarse movie of the collapse
+checkpoint_interval = 10
 plot_interval = 2
-num_plot_vars = 2
-plot_vars = chi Ham
+num_plot_vars = 4
+plot_vars = chi K lapse Ham
 
-# subpaths - specific directories for hdf5, pout, extraction data
-# (these are created at runtime)
 hdf5_subpath = "hdf5"
 pout_subpath = "pout"
 data_subpath = "data"
-
-# change the name of output files
-# pout_prefix = "pout"
 print_progress_only_to_rank_0 = 1
 
-# ignore_checkpoint_name_mismatch = 0
-# write_plot_ghosts = 0
-
 #################################################
-# Initial Data parameters
+# Initial Data parameters (DO NOT CHANGE THE PHYSICS)
 
 throat_radius = 1.0
 redshift_constant = 0.0
-# wormhole_center = 64 64 64 # defaults to center
+K_amplitude = -0.5
+K_width = 2.0
+regularization_radius = 0.01
 
 #################################################
-# Grid parameters
+# Grid parameters (MAJOR COST SAVINGS HERE)
 
-# 'N' is the number of subdivisions in each direction of a cubic box
-# 'L' is the length of the longest side of the box, dx_coarsest = L/N
-# NB - If you use reflective BC and want to specify the subdivisions and side
-# of the box were there are no symmetries, specify 'N_full' and 'L_full' instead
-# NB - if you have a non-cubic grid, you can specify 'N1' or 'N1_full',
-# 'N2' or 'N2_full' and 'N3' or 'N3_full' ( then dx_coarsest = L/N(max) )
-# NB - the N values need to be multiples of the block_factor
-N_full = 32
+# Coarser base grid
+N_full = 64
 L_full = 32
 
-# Maximum number of times you can regrid above coarsest level
-max_level = 2 # There are (max_level+1) grids, so min is zero
+# Fewer refinement levels. This is the biggest saving.
+max_level = 3 # Levels 0, 1, 2, 3. (dx_finest = (32/64)/2^3 = 0.0625)
+              # This still gives ~32 points across the throat diameter. Good enough for a test.
 
-# Frequency of regridding at each level and thresholds on the tagging
-# Need one for each level except the top one, ie max_level items
-# Generally you do not need to regrid frequently on every level
-# Level Regridding:   0   1   2
-regrid_interval   =  50  25   5
-regrid_thresholds = 0.3 0.3 0.3
+# Regrid less often.
+regrid_interval   = 4 2 2
+regrid_thresholds = 0.05 0.05 0.05
 
-# Max and min box sizes
-max_box_size = 32
-min_box_size = 32
-
-# tag_buffer_size = 3
-# grid_buffer_size = 8
-# fill_ratio = 0.7
-# num_ghosts = 3
-# center = 256.0 256.0 256.0 # defaults to center of the grid
+# Smaller boxes can sometimes help with parallel load balancing on cheaper runs.
+max_box_size = 16
+min_box_size = 8
+tag_buffer_size = 3
 
 #################################################
-# Boundary Conditions parameters
+# Boundary Conditions parameters (no changes needed)
 
-# Periodic directions - 0 = false, 1 = true
 isPeriodic = 0 0 0
-# if not periodic, then specify the boundary type
-# 0 = static, 1 = sommerfeld, 2 = reflective
-# (see BoundaryConditions.hpp for details)
 hi_boundary = 1 1 1
-lo_boundary = 1 1 2
-
-# if reflective boundaries selected, must set
-# parity of all vars (in order given by UserVariables.hpp)
-# 0 = even
-# 1,2,3 = odd x, y, z
-# 4,5,6 = odd xy, yz, xz
-# 7     = odd xyz
-vars_parity            = 0 0 4 6 0 5 0    #chi and hij
-                         0 0 4 6 0 5 0    #K and Aij
-                         0 1 2 3          #Theta and Gamma
-                         0 1 2 3 1 2 3    #lapse shift and B
-vars_parity_diagnostic = 0 1 2 3          #Ham and Mom
-
-# if sommerfeld boundaries selected, must select
-# non zero asymptotic values
+lo_boundary = 1 1 1
 num_nonzero_asymptotic_vars = 5
 nonzero_asymptotic_vars = chi h11 h22 h33 lapse
 nonzero_asymptotic_values = 1.0 1.0 1.0 1.0 1.0
 
-# if you are using extrapolating BC:
-# extrapolation_order = 1
-# num_extrapolating_vars = -1
-# extrapolating_vars =
-
 #################################################
 # Evolution parameters
 
-# dt will be dx*dt_multiplier on each grid level
-dt_multiplier = 0.1
-stop_time = 5.0
-max_steps = 10
+# Use a safe timestep multiplier.
+dt_multiplier = 0.25
 
-# Spatial derivative order (only affects CCZ4 RHS)
-max_spatial_derivative_order = 4 # can be 4 or 6
+# Run for just long enough to see the horizon form and settle.
+stop_time = 15.0
+# max_steps is not needed if stop_time is set
 
+max_spatial_derivative_order = 4
 nan_check = 1
 
-# Lapse evolution
+# No changes needed for gauge parameters
 lapse_advec_coeff = 1.0
 lapse_coeff = 2.0
 lapse_power = 1.0
-
-# Shift evolution
-shift_advec_coeff = 0.0 # Usually no advection for beta
+shift_advec_coeff = 0.0
 shift_Gamma_coeff = 0.75
-eta = 1.0 # eta of gamma driver, should be of order ~1/M_ADM of spacetime
-
-# CCZ4 parameters
-formulation = 1 # 1 for BSSN, 0 for CCZ4
-kappa1 = 0.
-kappa2 = 0.
-kappa3 = 0.
-covariantZ4 = 1 # 0: keep kappa1; 1 [default]: replace kappa1 -> kappa1/lapse
-
-# coefficient for KO numerical dissipation
-sigma = 0.3
-
-# min_chi = 1.e-4
-# min_lapse = 1.e-4
+eta = 1.0
+formulation = 1
+sigma = 0.1
 
 #################################################
-# Apparent Horizon Finder parameters
+# Apparent Horizon Finder parameters (ENABLE IT, but make it cheap)
 
-AH_activate = 1
-AH_num_ranks = 4 #20
-AH_num_points_u = 15 #30
-AH_num_points_v = 18 #50
-AH_solve_interval = 1
+# MUST be 1 to verify that a black hole forms.
+AH_activate = 0
+
+# Reduce the resolution of the AHFinder to speed up the solve
+AH_num_ranks = 10
+AH_num_points_u = 25
+AH_num_points_v = 24
+
+# Don't search for a horizon on every single timestep
+AH_solve_interval = 5
 AH_print_interval = 1
-AH_track_center = false
-AH_predict_origin = false
-# AH_level_to_run = 0
-# AH_allow_re_attempt = 0
-# AH_stop_if_max_fails = 0
-# AH_start_time = 0.
-# AH_give_up_time = -1. # -1 to never
-# AH_max_fails_after_lost = 0 # -1 to never
-# AH_print_geometry_data = 0
-# AH_re_solve_at_restart = 0
-# AH_verbose = 1
-# AH_expansion_radius_power = 1.
 
-# AH_initial_guess = 0.5
+# We know the wormhole is at the center
+AH_track_center = true
 
-# AH_look_for_chi_contour = 0.2
+# Run on a level that resolves the throat. Level 2 is a good compromise.
+# dx on L2 = (32/64)/2^2 = 0.125
+AH_level_to_run = 2
 
-AH_num_extra_vars = 1
-AH_extra_vars = chi
-
-# AH_coords_subpath = "data/coords"
-# AH_stats_prefix = "stats_AH"
-# AH_coords_prefix = "coords_AH"
-
-#################################################
+# A good initial guess is the throat radius
+AH_initial_guess = 1.0

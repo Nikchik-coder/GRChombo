@@ -59,10 +59,9 @@ pip install yt h5py matplotlib numpy pillow imageio
 
 ```bash
 # Generate plots for all available fields (auto-detected)
-source venv/bin/activate && python corrected_plot.py
 
 # OR run with MPI for parallel processing
-source venv/bin/activate && mpirun -n 4 python corrected_plot.py
+source venv/bin/activate && python plot_wormhole.py
 
 # List available field directories after plotting
 source venv/bin/activate && python create_animation.py --list
@@ -76,7 +75,7 @@ source venv/bin/activate && mpirun -n 4 python create_animation.py all
 
 # OR create animation for specific field
 source venv/bin/activate && python create_animation.py chi
-
+                                                                                                                                                                                            
 # Analyze gravitational wave data
 source venv/bin/activate && python plot_gravitational_waves.py
 
