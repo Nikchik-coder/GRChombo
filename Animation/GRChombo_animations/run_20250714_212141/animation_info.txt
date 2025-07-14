@@ -1,0 +1,18 @@
+GRChombo Animation Creation Report
+==================================
+
+Creation Date: 2025-07-14 21:21:54
+Simulation Type: GRChombo
+Working Directory: /home/nik/GRChombo/Animation
+Output Directory: /home/nik/GRChombo/Animation/GRChombo_animations/run_20250714_212141
+
+Animation Summary:
+Total Animations Created: 4
+Fields Animated: Ham, K, chi, lapse
+Source PNG files remain in their original directories
+
+Individual Animations:
+  - animation_Ham_GRChombo.gif (2.1 MB)
+  - animation_K_GRChombo.gif (1.9 MB)
+  - animation_chi_GRChombo.gif (0.7 MB)
+  - animation_lapse_GRChombo.gif (1.2 MB)
