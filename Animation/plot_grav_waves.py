@@ -34,7 +34,8 @@ def calculate_retarded_time(time, radius, mass=1.0):
 
 def load_weyl4_data(mode="22"):
     """Load raw Weyl4 data from the data directory"""
-    filename = f"data/Weyl4_mode_{mode}.dat"
+
+    filename = f"/home/nik/GRChombo_runs/Wormhole_Collapse_Cheap/data/Weyl4_mode_{mode}.dat"
     
     if not os.path.exists(filename):
         raise FileNotFoundError(f"Weyl4 data file {filename} not found!")

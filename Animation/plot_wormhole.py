@@ -20,7 +20,8 @@ DATA_PATH_PATTERN = "/home/nik/GRChombo_runs/Wormhole_Collapse_Cheap/hdf5/Wormho
 VARIABLES_TO_PLOT = [
     "chi", "K", "lapse", "Ham", 
     "h11", "h12", "h13", "h22", "h23", "h33",
-    "A11", "A12", "A13", "A22", "A23", "A33"
+    "A11", "A12", "A13", "A22", "A23", "A33",
+    "Weyl4_Re", "Weyl4_Im"
 ]
 
 # Set the axis for the 2D slice plot ("x", "y", or "z")

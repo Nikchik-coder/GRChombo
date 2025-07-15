@@ -482,7 +482,7 @@ class GravitationalWaveAnalyzer:
         try:
             # Save strain data
             for (l, m), data in self.strain.items():
-                filename = f"{output_dir}/strain_mode_{l}{m}.dat"
+                filename = f"/home/nik/GRChombo_runs/Wormhole_Collapse_Cheap/data/Weyl4_mode_{l}{m}.dat"
                 header = f"# Gravitational wave strain for (l,m) = ({l},{m})\n"
                 header += f"# Columns: time, Re[h], Im[h], |h|, phase\n"
                 
@@ -499,7 +499,7 @@ class GravitationalWaveAnalyzer:
             for (l, m) in self.strain.keys():
                 time_freq, frequency = self.calculate_frequency((l, m))
                 if time_freq is not None:
-                    filename = f"{output_dir}/frequency_mode_{l}{m}.dat"
+                    filename = f"/home/nik/GRChombo_runs/Wormhole_Collapse_Cheap/data/frequency_mode_{l}{m}.dat"
                     header = f"# Gravitational wave frequency for (l,m) = ({l},{m})\n"
                     header += f"# Columns: time, frequency\n"
                     
@@ -516,8 +516,11 @@ def main():
     print("🌊 GRChombo Gravitational Wave Analysis")
     print("=" * 50)
     
-    # Initialize analyzer with auto-detection
-    gw = GravitationalWaveAnalyzer()
+    # Set the data directory explicitly
+    data_dir = "/home/nik/GRChombo_runs/Wormhole_Collapse_Cheap/data"
+    
+    # Initialize analyzer with explicit data directory
+    gw = GravitationalWaveAnalyzer(data_dir=data_dir)
     
     # Load Weyl4 data
     gw.load_weyl4_data()
