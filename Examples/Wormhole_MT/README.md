@@ -150,7 +150,7 @@ make Main_Wormhole_collapse
 export EXEC_NAME=Main_Wormhole_collapse3d.Linux.64.mpicxx.gfortran.OPTHIGH.MPI.OPENMPCC.ex
 
 # 4. Run simulation
-mpirun -np 1 ./$EXEC_NAME params_cheap.txt
+mpirun -np 2 ./$EXEC_NAME params_cheap.txt
 
 
 ### Check Output Files

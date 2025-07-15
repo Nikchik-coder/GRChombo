@@ -17,8 +17,8 @@ plot_prefix = "Wormhole_p_cheap_"
 # Output frequently enough to make a coarse movie of the collapse
 checkpoint_interval = 10
 plot_interval = 2
-num_plot_vars = 4
-plot_vars = chi K lapse Ham
+num_plot_vars = 6
+plot_vars = chi K lapse Ham Weyl4_Re Weyl4_Im
 
 hdf5_subpath = "hdf5"
 pout_subpath = "pout"
@@ -30,7 +30,7 @@ print_progress_only_to_rank_0 = 1
 
 throat_radius = 1.0
 redshift_constant = 0.0
-K_amplitude = -0.5
+K_amplitude = -0.1
 K_width = 2.0
 regularization_radius = 0.01
 
@@ -53,6 +53,23 @@ regrid_thresholds = 0.05 0.05 0.05
 max_box_size = 16
 min_box_size = 8
 tag_buffer_size = 3
+
+#################################################
+# Extraction parameters
+activate_extraction = 1 # Add this line to turn on extraction
+
+#################################################
+# Extraction parameters (ADD THIS ENTIRE NEW SECTION)
+
+num_extraction_radii = 2
+extraction_radii = 10.0 15.0
+extraction_levels = 0 0 # The AMR level to use for each radius
+num_points_phi = 12
+num_points_theta = 19
+num_modes = 3
+modes = 2 0 # l m for spherical harmonics
+        2 1
+        2 2
 
 #################################################
 # Boundary Conditions parameters (no changes needed)
@@ -91,7 +108,7 @@ sigma = 0.1
 # Apparent Horizon Finder parameters (ENABLE IT, but make it cheap)
 
 # MUST be 1 to verify that a black hole forms.
-AH_activate = 0
+AH_activate = 1
 
 # Reduce the resolution of the AHFinder to speed up the solve
 AH_num_ranks = 10

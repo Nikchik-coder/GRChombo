@@ -34,8 +34,8 @@ class GravitationalWaveAnalyzer:
             "gw_data", 
             "../data",
             "../../data",
-            "/home/nik/GRChombo_runs/KerrBH/data",
-            "/home/nik/GRChombo_runs/BinaryBH/data"
+            "/home/nik/GRChombo_runs/Wormhole_Collapse/data"
+
         ]
         
         for search_dir in search_dirs:
