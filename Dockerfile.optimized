@@ -45,6 +45,11 @@ ENV CC=gcc-12
 ENV CXX=g++-12  
 ENV FC=gfortran-12
 
+# Create symlinks for MPI wrappers to find compilers
+RUN ln -sf /usr/bin/gcc-12 /usr/bin/gcc && \
+    ln -sf /usr/bin/g++-12 /usr/bin/g++ && \
+    ln -sf /usr/bin/gfortran-12 /usr/bin/gfortran
+
 # Create optimal working structure
 WORKDIR /build
 
@@ -76,12 +81,12 @@ OPENMPCC      = TRUE
 # 64-bit architecture
 USE_64        = TRUE
 
-# HDF5 configuration for Ubuntu 24.04
+# HDF5 configuration for Ubuntu 24.04 (using pkg-config for consistency)
 USE_HDF       = TRUE
 HDFINCFLAGS   = -I/usr/include/hdf5/serial
 HDFLIBFLAGS   = -L/usr/lib/x86_64-linux-gnu/hdf5/serial -lhdf5 -lz
 HDFMPIINCFLAGS = -I/usr/include/hdf5/openmpi
-HDFMPILIBFLAGS = -L/usr/lib/x86_64-linux-gnu/hdf5/openmpi -lhdf5 -lz
+HDFMPILIBFLAGS = -L/usr/lib/x86_64-linux-gnu/hdf5/openmpi -lhdf5 -lz -Wl,-rpath,/usr/lib/x86_64-linux-gnu/hdf5/openmpi
 
 # Namespace isolation for cleaner builds
 NAMESPACE     = TRUE
@@ -125,9 +130,9 @@ RUN apt-get update && apt-get install -y \
     # MPI runtime
     libopenmpi3 \
     openmpi-bin \
-    # HDF5 runtime libraries
-    libhdf5-openmpi-103-1 \
-    libhdf5-103-1 \
+    # HDF5 runtime libraries (match build version)
+    libhdf5-openmpi-dev \
+    libhdf5-dev \
     # Math runtime libraries
     liblapack3 \
     libblas3 \
@@ -155,6 +160,11 @@ ENV CC=gcc-12
 ENV CXX=g++-12
 ENV FC=gfortran-12
 ENV CHOMBO_HOME=/app/Chombo/lib
+
+# Create symlinks for MPI wrappers to find compilers
+RUN ln -sf /usr/bin/gcc-12 /usr/bin/gcc && \
+    ln -sf /usr/bin/g++-12 /usr/bin/g++ && \
+    ln -sf /usr/bin/gfortran-12 /usr/bin/gfortran
 
 # Create user-friendly workspace
 WORKDIR /app/GRChombo
