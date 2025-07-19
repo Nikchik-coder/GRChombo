@@ -1,0 +1,107 @@
+# =========================================================================
+# ULTRA-FAST SIMULATION for Wormhole Collapse Testing
+# Goal: Get simulation running ASAP with minimal computational cost
+# Perfect for Docker testing and workflow verification
+# =========================================================================
+
+#################################################
+# Filesystem parameters
+
+verbosity = 1
+
+# Output path (relative for Docker)
+output_path = "simulation_output/"
+chk_prefix = "Wormhole_ultrafast_"
+plot_prefix = "Wormhole_p_ultrafast_"
+
+# Reduce I/O frequency - less file writing = faster
+checkpoint_interval = 25
+plot_interval = 5
+num_plot_vars = 3  # Fewer variables = smaller files
+plot_vars = chi Ham Weyl4_Re
+
+hdf5_subpath = "hdf5"
+pout_subpath = "pout"
+data_subpath = "data"
+print_progress_only_to_rank_0 = 1
+
+#################################################
+# Initial Data parameters (keep physics the same)
+
+throat_radius = 1.0
+redshift_constant = 0.0
+K_amplitude = -0.05
+K_width = 2.0
+regularization_radius = 0.01
+
+#################################################
+# Grid parameters (MAXIMUM SPEED OPTIMIZATIONS)
+
+# Much coarser base grid
+N_full = 32        # Was 64 - HALVES the grid points!
+L_full = 16        # Smaller domain - less to compute
+
+# Minimal refinement levels - HUGE speedup
+max_level = 1      # Was 3 - Only levels 0,1 instead of 0,1,2,3
+                   # This is 8x fewer fine grid points!
+
+# Regrid very infrequently
+regrid_interval   = 20        # Was 4,2,2 - much less frequent
+regrid_thresholds = 0.1       # Less aggressive refinement
+
+# Larger boxes for efficiency
+max_box_size = 16
+min_box_size = 16
+tag_buffer_size = 2
+
+#################################################
+# Boundary Conditions parameters
+
+isPeriodic = 0 0 0
+hi_boundary = 1 1 1
+lo_boundary = 1 1 1
+num_nonzero_asymptotic_vars = 5
+nonzero_asymptotic_vars = chi h11 h22 h33 lapse
+nonzero_asymptotic_values = 1.0 1.0 1.0 1.0 1.0
+
+#################################################
+# Evolution parameters
+
+# Larger timestep for speed (still stable)
+dt_multiplier = 0.2    # Was 0.1 - DOUBLE the timestep!
+
+# Much shorter simulation
+stop_time = 5.0        # Was 15.0 - Just enough to see something happen
+max_steps = 100        # Safety limit
+
+max_spatial_derivative_order = 4
+nan_check = 1
+
+# Standard gauge parameters
+lapse_advec_coeff = 1.0
+lapse_coeff = 2.0
+lapse_power = 1.0
+
+shift_advec_coeff = 0.0
+shift_Gamma_coeff = 0.75
+eta = 1.0
+
+# CCZ4 parameters
+formulation = 1
+kappa1 = 0.
+kappa2 = 0.
+kappa3 = 0.
+covariantZ4 = 1
+
+# Numerical dissipation
+sigma = 0.3
+
+#################################################
+# Apparent Horizon Finder (DISABLED for speed)
+
+AH_activate = 0    # Turn off AH finder - saves significant time
+
+#################################################
+# Extraction (DISABLED for speed)
+
+activate_extraction = 0    # Turn off gravitational wave extraction 

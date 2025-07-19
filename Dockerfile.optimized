@@ -1,0 +1,180 @@
+# =========================================================================
+# OPTIMIZED GRChombo Docker Image
+# Features: Multi-stage build, optimized layers, embedded config, latest deps
+# =========================================================================
+
+# Stage 1: Build environment with all development tools
+FROM ubuntu:24.04 AS builder
+
+# Prevent interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install modern build dependencies in a single layer for better caching
+RUN apt-get update && apt-get install -y \
+    # Core build tools
+    build-essential \
+    git \
+    cmake \
+    pkg-config \
+    # Compilers and parallel tools
+    gcc-12 \
+    g++-12 \
+    gfortran-12 \
+    # MPI and parallel libraries  
+    libopenmpi-dev \
+    openmpi-bin \
+    # HDF5 with MPI support
+    libhdf5-openmpi-dev \
+    libhdf5-dev \
+    # Math libraries
+    liblapack-dev \
+    libblas-dev \
+    libfftw3-dev \
+    # Additional numerical libraries
+    libgsl-dev \
+    # Shell and utilities
+    csh \
+    curl \
+    wget \
+    # Cleanup in same layer
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Set up modern compiler environment
+ENV CC=gcc-12
+ENV CXX=g++-12  
+ENV FC=gfortran-12
+
+# Create optimal working structure
+WORKDIR /build
+
+# Clone repositories with specific optimized settings
+RUN git clone --depth 1 https://github.com/GRChombo/Chombo.git && \
+    git clone --depth 1 https://github.com/GRChombo/GRChombo.git
+
+# Create optimized Make.defs.local directly in the image
+RUN cat > /build/Chombo/lib/mk/Make.defs.local << 'EOF'
+#begin  -- dont change this line
+# Optimized Docker configuration for Ubuntu 24.04 with modern compilers
+# Built for maximum performance and compatibility
+
+DIM           = 3
+DEBUG         = TRUE
+OPT           = TRUE
+PRECISION     = DOUBLE
+PROFILE       = FALSE
+
+# Use modern GCC compilers
+CXX           = g++-12
+FC            = gfortran-12
+
+# Enable MPI for parallel computing
+MPI           = TRUE
+MPICXX        = mpicxx
+OPENMPCC      = TRUE
+
+# 64-bit architecture
+USE_64        = TRUE
+
+# HDF5 configuration for Ubuntu 24.04
+USE_HDF       = TRUE
+HDFINCFLAGS   = -I/usr/include/hdf5/serial
+HDFLIBFLAGS   = -L/usr/lib/x86_64-linux-gnu/hdf5/serial -lhdf5 -lz
+HDFMPIINCFLAGS = -I/usr/include/hdf5/openmpi
+HDFMPILIBFLAGS = -L/usr/lib/x86_64-linux-gnu/hdf5/openmpi -lhdf5 -lz
+
+# Namespace isolation for cleaner builds
+NAMESPACE     = TRUE
+USE_MT        = FALSE
+
+# Optimized compiler flags for Docker containers
+cxxoptflags   = -O3 -march=x86-64 -mtune=generic -std=c++17
+foptflags     = -O3 -march=x86-64 -mtune=generic
+
+# System libraries
+syslibflags   = -lblas -llapack
+
+# Basic configuration without PETSc (can be added later if needed)
+# cxxcppflags   = -DUSE_AHFINDER
+# syslibflags  += `pkg-config --libs petsc 2>/dev/null || echo ""`
+
+#end  -- dont change this line
+EOF
+
+# Build Chombo with optimal parallel settings
+RUN cd /build/Chombo/lib && \
+    make lib -j$(nproc) 2>&1 | tee build.log
+
+# Set Chombo environment for GRChombo builds
+ENV CHOMBO_HOME=/build/Chombo/lib
+
+# =========================================================================
+# Stage 2: Runtime image (smaller, production-ready)
+# =========================================================================
+FROM ubuntu:24.04 AS runtime
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install only runtime dependencies (much smaller)
+RUN apt-get update && apt-get install -y \
+    # Runtime compilers (needed for user builds)
+    gcc-12 \
+    g++-12 \
+    gfortran-12 \
+    make \
+    # MPI runtime
+    libopenmpi3 \
+    openmpi-bin \
+    # HDF5 runtime libraries
+    libhdf5-openmpi-103-1 \
+    libhdf5-103-1 \
+    # Math runtime libraries
+    liblapack3 \
+    libblas3 \
+    # Additional runtime libraries
+    libgsl27 \
+    # Essential utilities
+    csh \
+    git \
+    pkg-config \
+    # Development headers (needed for user compilation)
+    libopenmpi-dev \
+    libhdf5-openmpi-dev \
+    liblapack-dev \
+    libblas-dev \
+    # Cleanup
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Copy built Chombo from builder stage
+COPY --from=builder /build/Chombo /app/Chombo
+COPY --from=builder /build/GRChombo /app/GRChombo
+
+# Set up environment
+ENV CC=gcc-12
+ENV CXX=g++-12
+ENV FC=gfortran-12
+ENV CHOMBO_HOME=/app/Chombo/lib
+
+# Create user-friendly workspace
+WORKDIR /app/GRChombo
+
+# Add convenience scripts
+RUN echo '#!/bin/bash\n\
+echo "=== GRChombo Docker Environment ==="\n\
+echo "Chombo: $CHOMBO_HOME"\n\
+echo "Compilers: $(gcc-12 --version | head -1)"\n\
+echo "MPI: $(mpirun --version | head -1)"\n\
+echo "HDF5: $(pkg-config --modversion hdf5 2>/dev/null || echo \"Available\")"\n\
+echo "Working directory: $(pwd)"\n\
+echo "Available examples:"\n\
+ls -1 Examples/ | head -10\n\
+echo "=== Ready for simulation! ==="\n\
+' > /usr/local/bin/grchombo-info && \
+chmod +x /usr/local/bin/grchombo-info
+
+# Set default working directory to Examples
+WORKDIR /app/GRChombo/Examples
+
+# Display info on container start
+CMD grchombo-info && /bin/bash 

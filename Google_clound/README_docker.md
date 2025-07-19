@@ -22,6 +22,7 @@ This Docker workflow allows you to:
 - [Monitoring Simulations](#monitoring-simulations)
 - [Troubleshooting](#troubleshooting)
 - [Directory Structure](#directory-structure)
+- [Benefits](#benefits)
 
 ## Prerequisites
 
@@ -43,7 +44,8 @@ cd /my_project/Examples/Wormhole_MT/
 
 # 4. Compile and run
 make
-mpirun -np 4 --allow-run-as-root ./your_executable_name.ex params.txt
+ls *.ex  # Find the actual executable name
+mpirun -np 4 --allow-run-as-root ./[TAB-complete-executable-name] params.txt
 ```
 
 ## Installation
@@ -126,9 +128,19 @@ output_path = "/home/nik/..."
    make
    ```
 
-2. **Run simulation**:
+2. **Find your executable name**:
    ```bash
-   mpirun -np 4 --allow-run-as-root ./your_executable_name.ex params.txt
+   ls *.ex
+   ```
+   > 💡 GRChombo creates executables with long, descriptive names like `Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.DEBUG.OPT.MPI.OPENMPCC.ex`
+
+3. **Run simulation**:
+   ```bash
+   # Use TAB completion after typing the first few characters
+   mpirun -np 4 --allow-run-as-root ./Main_[TAB] params.txt
+   
+   # Or copy the full name from ls output:
+   mpirun -np 4 --allow-run-as-root ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.DEBUG.OPT.MPI.OPENMPCC.ex params.txt
    ```
    
    > ⚠️ The `--allow-run-as-root` flag is required when running as root inside the container.
@@ -167,6 +179,8 @@ You should see HDF5 files appearing in real-time:
 | **Container won't start** | Try `sudo aa-complain /etc/apparmor.d/docker` on Linux |
 | **Build fails** | Ensure you're in the correct directory with `GNUmakefile` |
 | **MPI errors** | Always include `--allow-run-as-root` flag |
+| **"Unable to launch executable"** | Use `ls *.ex` to find the actual executable name, don't guess |
+| **Wrong executable name** | Use TAB completion: type `./Main_[TAB]` to auto-complete |
 
 ### Debugging Commands
 
@@ -182,6 +196,27 @@ docker run -v $(pwd):/my_project -it grchombo/grchombo ls -la /my_project
 sudo aa-status | grep docker
 ```
 
+### Executable Name Tips
+
+**GRChombo generates very long executable names** like:
+```
+Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.DEBUG.OPT.MPI.OPENMPCC.ex
+```
+
+**Helpful shortcuts:**
+
+```bash
+# Use tab completion (type first few chars + TAB)
+mpirun -np 4 --allow-run-as-root ./Main_[TAB] params.txt
+
+# Create a shorter symlink
+ln -s Main_Wormhole_collapse*.ex wormhole.ex
+mpirun -np 4 --allow-run-as-root ./wormhole.ex params.txt
+
+# Use wildcards (if only one .ex file exists)
+mpirun -np 4 --allow-run-as-root ./Main_Wormhole_collapse*.ex params.txt
+```
+
 ## Directory Structure
 
 After setup, your local directory structure will look like:
@@ -195,7 +230,7 @@ After setup, your local directory structure will look like:
 │       │   └── *.checkpoint.3d.hdf5
 │       ├── pout/                  # ← Log files
 │       │   └── pout.0
-│       ├── your_executable_name.ex
+│       ├── Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.DEBUG.OPT.MPI.OPENMPCC.ex
 │       ├── params.txt
 │       └── source files...
 └── Source/

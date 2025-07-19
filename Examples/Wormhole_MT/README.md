@@ -191,3 +191,10 @@ mpirun -np 1 ./Main_Wormhole_collapse3d.Linux.64.mpicxx.gfortran.OPTHIGH.MPI.OPE
 - Monitor the output for any error messages or warnings
 - This example demonstrates the collapse of a traversable wormhole, which typically occurs on dynamical timescales
 - The simulation uses the CCZ4 formulation of Einstein's equations with moving puncture gauge conditions 
+
+
+
+      
+mpirun -np 2 --allow-run-as-root ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.DEBUG.OPT.MPI.OPENMPCC.ex params.txt
+
+    

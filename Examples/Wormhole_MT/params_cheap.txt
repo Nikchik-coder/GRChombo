@@ -10,7 +10,7 @@
 verbosity = 1 # Good for debugging grid setup
 
 # Give this run a unique output path to not overwrite production data
-output_path = "/home/nik/GRChombo_runs/Wormhole_Collapse_Cheap"
+output_path = "simulation_output/"
 chk_prefix = "Wormhole_cheap_"
 plot_prefix = "Wormhole_p_cheap_"
 

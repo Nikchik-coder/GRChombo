@@ -7,7 +7,8 @@
 verbosity = 0
 
 # location / naming of output files
-output_path = "/home/nik/GRChombo_runs/Wormhole_Collapse"
+#output_path = "/home/nik/GRChombo_runs/Wormhole_Collapse"
+output_path = "simulation_output/"
 chk_prefix = Wormhole_
 plot_prefix = Wormhole_p_
 # restart_file = KerrBH_000060.3d.hdf5
