@@ -30,7 +30,7 @@ print_progress_only_to_rank_0 = 1
 
 throat_radius = 1.0
 redshift_constant = 0.0
-K_amplitude = -0.1
+K_amplitude = -0.05
 K_width = 2.0
 regularization_radius = 0.01
 
@@ -62,7 +62,7 @@ activate_extraction = 1 # Add this line to turn on extraction
 # Extraction parameters (ADD THIS ENTIRE NEW SECTION)
 
 num_extraction_radii = 2
-extraction_radii = 10.0 15.0
+extraction_radii = 3.0 5.0
 extraction_levels = 0 0 # The AMR level to use for each radius
 num_points_phi = 12
 num_points_theta = 19
@@ -85,7 +85,7 @@ nonzero_asymptotic_values = 1.0 1.0 1.0 1.0 1.0
 # Evolution parameters
 
 # Use a safe timestep multiplier.
-dt_multiplier = 0.25
+dt_multiplier = 0.1
 
 # Run for just long enough to see the horizon form and settle.
 stop_time = 15.0
