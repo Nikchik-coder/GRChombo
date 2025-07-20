@@ -12,7 +12,7 @@ import matplotlib
 
 # Set the path to your simulation's HDF5 files.
 # The wildcard "*" will match all files with that pattern.
-DATA_PATH_PATTERN = "/home/nik/GRChombo_runs/Wormhole_Collapse_Cheap/hdf5/Wormhole_p_*.3d.hdf5"
+DATA_PATH_PATTERN = "/home/nik/GRChombo/Examples/Wormhole_MT/simulation_output/hdf5/Wormhole_p_*.3d.hdf5"
 
 # Define the list of all variables you are interested in plotting.
 # The script will try to plot each of these from every file. If a variable

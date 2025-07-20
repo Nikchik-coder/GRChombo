@@ -34,7 +34,8 @@ class GravitationalWaveAnalyzer:
             "gw_data", 
             "../data",
             "../../data",
-            "/home/nik/GRChombo_runs/Wormhole_Collapse/data"
+            "/home/nik/GRChombo/Examples/Wormhole_MT/simulation_output/data"
+            # "/home/nik/GRChombo_runs/Wormhole_Collapse/data"
 
         ]
         

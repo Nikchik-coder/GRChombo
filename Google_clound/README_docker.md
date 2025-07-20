@@ -60,14 +60,17 @@ cd /home/nik/GRChombo/
 ./build-docker.sh --name grchombo-optimized --tag v1.2
 
 # 3. Start container with mounted project
-docker run -v $(pwd):/my_project -it grchombo-optimized:v1.2
+docker run -v $(pwd):/app/GRChombo -it grchombo-optimized:v1.2
 
 # 4. Inside container: navigate to your example
-cd /my_project/Examples/Wormhole_MT/
+cd /app/GRChombo/Examples/Wormhole_MT/
 
-# 5. Compile and run (use EXACT executable name!)
-make Main_Wormhole_collapse
-mpirun -np 2 --allow-run-as-root ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran-12.DEBUG.OPT.MPI.OPENMPCC.ex params_cheap.txt
+# 5. Compile the STABLE, OPTIMIZED version
+make clean && make OPT=HIGH
+
+# 6. Run the OPTIMIZED executable for stable results
+# Note: Always use the ...OPTHIGH... version to avoid numerical errors.
+mpirun -np 2 --allow-run-as-root ./Main_Wormhole_collapse3d.Linux.64.mpicxx.gfortran.OPTHIGH.MPI.OPENMPCC.ex params_cheap.txt
 ```
 
 ## Building v1.2 Image
@@ -161,7 +164,7 @@ sudo systemctl restart docker
 
 2. **Start optimized Docker container**:
    ```bash
-   docker run -v $(pwd):/my_project -it grchombo-optimized:v1.2
+   docker run -v $(pwd):/app/GRChombo -it grchombo-optimized:v1.2
    ```
    
    > 💡 Your terminal prompt will change to `root@...`, indicating you're inside the container.
@@ -169,7 +172,7 @@ sudo systemctl restart docker
 
 3. **Navigate to your custom example**:
    ```bash
-   cd /my_project/Examples/Wormhole_MT/
+   cd /app/GRChombo/Examples/Wormhole_MT/
    ```
 
 ### Phase 2: Configuration
@@ -188,24 +191,26 @@ output_path = "/home/nik/..."
 
 ### Phase 3: Compile and Run
 
-1. **Compile your code**:
+1. **Compile your code for high performance**:
    ```bash
-   make
+   # Use OPT=HIGH to create a stable, optimized executable
+   make OPT=HIGH
    ```
+   > Running `make clean` first is recommended if you have previously built a `DEBUG` version.
 
 2. **Find your executable name**:
    ```bash
    ls *.ex
    ```
-   > 💡 GRChombo creates executables with long, descriptive names like `Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.DEBUG.OPT.MPI.OPENMPCC.ex`
+   > 💡 GRChombo creates executables with long, descriptive names. Look for the one containing `OPTHIGH`, for example `Main_Wormhole_collapse3d.Linux.64.mpicxx.gfortran.OPTHIGH.MPI.OPENMPCC.ex`
 
-3. **Run simulation**:
+3. **Run the optimized simulation**:
    ```bash
    # Use TAB completion after typing the first few characters
    mpirun -np 4 --allow-run-as-root ./Main_[TAB] params.txt
    
    # Or copy the full name from ls output:
-   mpirun -np 4 --allow-run-as-root ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.DEBUG.OPT.MPI.OPENMPCC.ex params.txt
+   mpirun -np 4 --allow-run-as-root ./Main_Wormhole_collapse3d.Linux.64.mpicxx.gfortran.OPTHIGH.MPI.OPENMPCC.ex params.txt
    ```
    
    > ⚠️ The `--allow-run-as-root` flag is required when running as root inside the container.
@@ -277,23 +282,20 @@ sudo aa-status | grep docker
 
 ### Executable Name Tips
 
-**GRChombo v1.2 generates specific executable names** like:
-```
-Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran-12.DEBUG.OPT.MPI.OPENMPCC.ex
-```
+**GRChombo v1.2 generates specific executable names.** For a stable, optimized run, you should build with `make OPT=HIGH` and use the resulting executable.
 
 **Working commands for v1.2:**
 
 ```bash
-# Use TAB completion (recommended)
-mpirun -np 2 --allow-run-as-root ./Main_[TAB] params_cheap.txt
+# Build the optimized executable first inside the container
+make clean && make OPT=HIGH
 
-# Or use the exact name (copy from ls output)
+# Then find and run the OPTHIGH version
 ls *.ex
-mpirun -np 2 --allow-run-as-root ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran-12.DEBUG.OPT.MPI.OPENMPCC.ex params_cheap.txt
+mpirun -np 2 --allow-run-as-root ./Main_Wormhole_collapse3d.Linux.64.mpicxx.gfortran.OPTHIGH.MPI.OPENMPCC.ex params_cheap.txt
 
-# ⚠️  DO NOT use wildcards (picks wrong executable)
-# mpirun -np 2 --allow-run-as-root ./Main_Wormhole_collapse*.ex params.txt  # WRONG!
+# ⚠️  DO NOT use the DEBUG version for production runs as it may be unstable.
+# mpirun -np 2 --allow-run-as-root ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran-12.DEBUG.OPT.MPI.OPENMPCC.ex params.txt  # WRONG!
 ```
 
 ## Directory Structure
@@ -405,14 +407,14 @@ rm -rf /home/nik/GRChombo/Examples/Wormhole_MT/simulation_output/*
 sudo rm -rf /home/nik/GRChombo/Examples/Wormhole_MT/simulation_output/*
 
 # 2. Start optimized container
-docker run -v $(pwd):/my_project -it grchombo-optimized:v1.2
+docker run -v $(pwd):/app/GRChombo -it grchombo-optimized:v1.2
 
-# 3. Inside container: compile and run
-cd /my_project/Examples/Wormhole_MT/
-make Main_Wormhole_collapse
+# 3. Inside container: compile the OPTIMIZED version
+cd /app/GRChombo/Examples/Wormhole_MT/
+make clean && make OPT=HIGH
 
-# 4. Run EXACT executable (no wildcards!)
-mpirun -np 2 --allow-run-as-root ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran-12.DEBUG.OPT.MPI.OPENMPCC.ex params_cheap.txt
+# 4. Run the OPTIMIZED executable for stable results!
+mpirun -np 2 --allow-run-as-root ./Main_Wormhole_collapse3d.Linux.64.mpicxx.gfortran.OPTHIGH.MPI.OPENMPCC.ex params_cheap.txt
 ```
 
 ### **Monitoring Simulation Progress**
@@ -503,6 +505,7 @@ docker exec $(docker ps -q) bash -c "free -h && ps aux --sort=-%mem | head -5"
 |-----------|------------------|--------------|
 | **No files appearing** | `ls -la simulation_output/` | Check relative path in params |
 | **Simulation stuck** | `tail pout/pout.0` | Look for error messages |
+| **Gigantic values in output** | `ls *.ex` | Ensure you are running the `OPTHIGH` executable, not `DEBUG`. Recompile with `make OPT=HIGH`. |
 | **Slow performance** | `docker stats` | Check CPU/memory usage |
 | **Disk space full** | `df -h .` | Clean old simulation data |
 
@@ -522,13 +525,13 @@ exit
 docker run -v $(pwd):/my_project -it grchombo-optimized:v1.2
 cd /my_project/Examples/Wormhole_MT/
 # Edit params to set restart_file = latest_checkpoint.3d.hdf5
-mpirun -np 2 --allow-run-as-root ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran-12.DEBUG.OPT.MPI.OPENMPCC.ex params_cheap.txt
+mpirun -np 2 --allow-run-as-root ./Main_Wormhole_collapse3d.Linux.64.mpicxx.gfortran.OPTHIGH.MPI.OPENMPCC.ex params_cheap.txt
 ```
 
 ### **Key Simulation Points**
 
 - ✅ Use **specific executable name** (not `*.ex` wildcards)
-- ✅ Use **DEBUG version** (`_ch.Linux...DEBUG.OPT.MPI.OPENMPCC.ex`)
+- ✅ Use **`OPTHIGH` version** (`...OPTHIGH...ex`) for stable results
 - ✅ Start with **params_cheap.txt** (known working configuration)
 - ✅ Clean files with **sudo** or **Docker method**
 - ✅ Monitor from **multiple terminals** for complete visibility

@@ -11,6 +11,7 @@ verbosity = 1 # Good for debugging grid setup
 
 # Give this run a unique output path to not overwrite production data
 output_path = "simulation_output/"
+#output_path = "/home/nik/GRChombo_runs/Wormhole_Collapse"
 chk_prefix = "Wormhole_cheap_"
 plot_prefix = "Wormhole_p_cheap_"
 
@@ -38,19 +39,19 @@ regularization_radius = 0.01
 # Grid parameters (MAJOR COST SAVINGS HERE)
 
 # Coarser base grid
-N_full = 64
+N_full = 96
 L_full = 32
 
 # Fewer refinement levels. This is the biggest saving.
-max_level = 3 # Levels 0, 1, 2, 3. (dx_finest = (32/64)/2^3 = 0.0625)
-              # This still gives ~32 points across the throat diameter. Good enough for a test.
+max_level = 5 # Levels 0, 1, 2, 3, 4, 5.
+              # A higher max_level provides better resolution for the collapse.
 
 # Regrid less often.
-regrid_interval   = 4 2 2
-regrid_thresholds = 0.05 0.05 0.05
+regrid_interval   = 4 2 2 2 2
+regrid_thresholds = 0.05 0.05 0.05 0.05 0.05
 
 # Smaller boxes can sometimes help with parallel load balancing on cheaper runs.
-max_box_size = 16
+max_box_size = 32
 min_box_size = 8
 tag_buffer_size = 3
 
@@ -63,7 +64,7 @@ activate_extraction = 1 # Add this line to turn on extraction
 
 num_extraction_radii = 2
 extraction_radii = 3.0 5.0
-extraction_levels = 0 0 # The AMR level to use for each radius
+extraction_levels = 3 3 # Extract from a more refined level.
 num_points_phi = 12
 num_points_theta = 19
 num_modes = 3
@@ -85,7 +86,7 @@ nonzero_asymptotic_values = 1.0 1.0 1.0 1.0 1.0
 # Evolution parameters
 
 # Use a safe timestep multiplier.
-dt_multiplier = 0.1
+dt_multiplier = 0.2
 
 # Run for just long enough to see the horizon form and settle.
 stop_time = 15.0
@@ -122,9 +123,8 @@ AH_print_interval = 1
 # We know the wormhole is at the center
 AH_track_center = true
 
-# Run on a level that resolves the throat. Level 2 is a good compromise.
-# dx on L2 = (32/64)/2^2 = 0.125
-AH_level_to_run = 2
+# Run on a level that resolves the throat. Level 4 is a good choice with max_level=5
+AH_level_to_run = 4
 
 # A good initial guess is the throat radius
 AH_initial_guess = 1.0

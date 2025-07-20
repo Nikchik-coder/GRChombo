@@ -20,7 +20,8 @@ M = 1.0
 mode = "22"
 
 # --- Data Loading ---
-psi4_input_filename = "/home/nik/GRChombo_runs/Wormhole_Collapse_Cheap/data/Weyl4_mode_" + mode + ".dat"
+psi4_input_filename = "/home/nik/GRChombo/Examples/Wormhole_MT/simulation_output/data/Weyl4_mode_" + mode + ".dat"
+# psi4_input_filename = "/home/nik/GRChombo_runs/Wormhole_Collapse_Cheap/data/Weyl4_mode_" + mode + ".dat"
 
 try:
     # Load the raw Psi4 data.

@@ -80,6 +80,8 @@ source venv/bin/activate && python create_animation.py chi
 source venv/bin/activate && python plot_gravitational_waves.py
 
 source venv/bin/activate && mpirun -n 4 python plot_gravitational_waves.py
+
+source venv/bin/activate && python grav_waves.py
 ```
 
 ### 3. View Results
