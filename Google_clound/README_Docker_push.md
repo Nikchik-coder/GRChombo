@@ -48,21 +48,31 @@ Repeat these steps whenever you want to push a new version of your Docker image.
 Tag your local Docker image with the full Artifact Registry path:
 
 ```bash
-docker tag grchombo-optimized:v1.2 us-central1-docker.pkg.dev/rock-wonder-466311-g6/grchombo-repo/grchombo-optimized:v1.2
+docker tag [LOCAL_IMAGE_NAME]:[TAG] [REGION]-docker.pkg.dev/[PROJECT_ID]/[REPOSITORY_NAME]/[IMAGE_NAME]:[TAG]
 ```
 
 **Tag Format Breakdown:**
-- `us-central1-docker.pkg.dev` - Artifact Registry hostname
-- `rock-wonder-466311-g6` - Your Google Cloud project ID
-- `grchombo-repo` - Your repository name
-- `grchombo-optimized:v1.2` - Image name and version tag
+- `[REGION]-docker.pkg.dev` - Artifact Registry hostname (e.g., `us-central1-docker.pkg.dev`)
+- `[PROJECT_ID]` - Your Google Cloud project ID
+- `[REPOSITORY_NAME]` - Your repository name
+- `[IMAGE_NAME]:[TAG]` - Image name and version tag
+
+**Example:**
+```bash
+docker tag grchombo-dev:latest us-central1-docker.pkg.dev/rock-wonder-466311-g6/grchombo-repo/grchombo-dev:latest
+```
 
 ### Step 5: Push to Artifact Registry
 
 Upload your tagged image to Google Cloud:
 
 ```bash
-docker push us-central1-docker.pkg.dev/rock-wonder-466311-g6/grchombo-repo/grchombo-optimized:v1.2
+docker push [REGION]-docker.pkg.dev/[PROJECT_ID]/[REPOSITORY_NAME]/[IMAGE_NAME]:[TAG]
+```
+
+**Example:**
+```bash
+docker push us-central1-docker.pkg.dev/rock-wonder-466311-g6/grchombo-repo/grchombo-dev:latest
 ```
 
 ## Summary
@@ -75,8 +85,8 @@ For subsequent image versions, you only need to repeat Phase 2:
 
 ```bash
 # Tag the new version
-docker tag grchombo-optimized:v1.3 us-central1-docker.pkg.dev/rock-wonder-466311-g6/grchombo-repo/grchombo-optimized:v1.3
+docker tag [LOCAL_IMAGE_NAME]:[NEW_TAG] [REGION]-docker.pkg.dev/[PROJECT_ID]/[REPOSITORY_NAME]/[IMAGE_NAME]:[NEW_TAG]
 
 # Push to registry
-docker push us-central1-docker.pkg.dev/rock-wonder-466311-g6/grchombo-repo/grchombo-optimized:v1.3
+docker push [REGION]-docker.pkg.dev/[PROJECT_ID]/[REPOSITORY_NAME]/[IMAGE_NAME]:[NEW_TAG]
 ```

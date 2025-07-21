@@ -65,6 +65,7 @@ docker run -v $(pwd):/app/GRChombo -it grchombo-optimized:v1.2
 # 4. Inside container: navigate to your example
 cd /app/GRChombo/Examples/Wormhole_MT/
 
+cd Examples/Wormhole_MT/
 # 5. Compile the STABLE, OPTIMIZED version
 make clean && make OPT=HIGH
 

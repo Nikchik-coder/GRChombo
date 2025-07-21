@@ -7,6 +7,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Install all the modern dependencies needed to build GRChombo
 RUN apt-get update && apt-get install -y \
     build-essential \
+    g++ \
     git \
     gfortran \
     openmpi-bin \

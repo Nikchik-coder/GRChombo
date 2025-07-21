@@ -4,7 +4,7 @@
 
 Before you begin, ensure you have completed the following one-time setup tasks:
 
-1. **Custom Docker Image Built**: You have created a modern, optimized Docker image (e.g., `grchombo-optimized:v1.2`).
+1. **Custom Docker Image Built**: You have created a modern, optimized Docker image (e.g., `grchombo-dev`).
 
 2. **Artifact Registry Setup**:
    - You have created a Docker repository in Google Artifact Registry.
@@ -51,7 +51,8 @@ Always perform a quick, cheap test run to ensure your setup works before launchi
 
 4. Pull your custom image from the registry:
    ```bash
-   docker pull us-central1-docker.pkg.dev/rock-wonder-466311-g6/grchombo-repo/grchombo-optimized:v1.2
+   # Use the image name you built and pushed
+   docker pull us-central1-docker.pkg.dev/rock-wonder-466311-g6/grchombo-repo/grchombo-dev
    ```
 
 5. Clone your project code:
@@ -66,11 +67,26 @@ Always perform a quick, cheap test run to ensure your setup works before launchi
    cd GRChombo/
    ```
 
-2. Start the Docker container, using the full image name from the registry:
+2. Start the Docker container, using the full image name from the registry.
+
+   > **Note**: This command does **not** mount the persistent data disk. For this test run, the simulation will write a small amount of output data to a `simulation_output` directory inside your project folder. Do not change `output_path` to `/output/...` at this stage.
+
    ```bash
-   docker run -v $(pwd):/my_project -it us-central1-docker.pkg.dev/rock-wonder-466311-g6/grchombo-repo/grchombo-optimized:v1.2
+   docker run -v $(pwd):/my_project -it us-central1-docker.pkg.dev/rock-wonder-466311-g6/grchombo-repo/grchombo-dev
    ```
-   
+
+3. cd /my_project/Examples/Wormhole_MT/
+
+4. Compile the code:
+   ```bash
+   make
+   ```
+
+5. Run the simulation with a test parameter file:
+   ```bash
+   mpirun -np 2 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPT.MPI.OPENMPCC.ex params_cheap.txt
+   ```
+   This should complete quickly and generate a small amount of data.
 
 Phase 3: Adding a Persistent Disk for Simulation Data
 
@@ -143,7 +159,98 @@ Your large data disk is now ready! 🎉
 With your data disk prepared, you can now proceed to the final production run. When you run your Docker container, you will map this data directory as a second volume and configure your simulation to write output there:
 
 ```bash
-docker run -v $(pwd):/my_project -v /mnt/data:/output -it us-central1-docker.pkg.dev/rock-wonder-466311-g6/grchombo-repo/grchombo-optimized:v1.2
+docker run -v $(pwd):/my_project -v /mnt/data:/output -it us-central1-docker.pkg.dev/rock-wonder-466311-g6/grchombo-repo/grchombo-dev
 ```
 
-In your `params.txt` file, set the output path to `/output/your_run_name/` to ensure all simulation data is written to the persistent disk.
+To ensure all simulation data is written to the persistent disk, you must update your `params.txt` file.
+
+1.  **Open your parameter file**, for example, `Examples/Wormhole_MT/params.txt`.
+
+2.  **Find the `output_path` parameter**. It will look like this:
+    ```
+    # location / naming of output files
+    #output_path = "/home/nik/GRChombo_runs/Wormhole_Collapse"
+    output_path = "simulation_output/"
+    ```
+
+3.  **Change it to point to the `/output` directory** inside the container. We recommend creating a subdirectory for each run:
+    ```
+    # location / naming of output files
+    #output_path = "/home/nik/GRChombo_runs/Wormhole_Collapse"
+    output_path = "/output/wormhole_run_01/"
+    ```
+
+Now, when you run the simulation, all HDF5 data, log files, and other outputs will be saved to `/mnt/data/wormhole_run_01` on your VM, which is your persistent data disk.
+
+### Step 4.2: Verifying the Output on the VM
+
+Once the simulation is running inside the container, you can monitor its progress and check the output data from a **separate SSH terminal connected to your VM** (not the Docker container terminal).
+
+1.  **Navigate to your data disk's mount point**:
+    ```bash
+    cd /mnt/data
+    ```
+
+2.  **List the contents**. After a minute, you should see the directory created by the simulation:
+    ```bash
+    ls -l
+    ```
+    The output should contain your run directory, e.g., `wormhole_run_01`.
+
+3.  **Check for data files**. The main scientific data is saved in the `hdf5` subdirectory:
+    ```bash
+    # Replace wormhole_run_01 with your actual output directory name
+    ls -l /mnt/data/wormhole_run_01/hdf5/
+    ```
+    You will see files like `Wormhole_..._.3d.hdf5` appear here as the simulation progresses.
+
+4.  **Watch the live log file**. This is the best way to see the simulation's status in real-time:
+    ```bash
+    # Replace wormhole_run_01 with your actual output directory name
+    tail -f /mnt/data/wormhole_run_01/pout/pout.0
+    ```
+    This will show you the current timestep and simulation time. Press `Ctrl+C` to stop watching.
+
+## Phase 5: Troubleshooting
+
+### Problem: Output data does not appear in `/mnt/data`
+
+You may encounter a rare but serious issue where the Docker volume mount fails silently.
+
+**Symptom**: You have followed all the steps, set `output_path` correctly, and started the simulation. When you run `ls -l /output` **inside the container**, you can see your data directory (e.g., `wormhole_run_01`). However, when you run `ls -l /mnt/data` **on your VM**, the directory is missing.
+
+This means the link between the container's `/output` folder and the VM's `/mnt/data` folder is broken.
+
+**Step 1: Confirm the Diagnosis**
+
+1.  From **inside the Docker container** (`root@...` prompt), try to create a test file:
+    ```bash
+    touch /output/test_file.txt
+    ```
+2.  From your **VM terminal** (`nikita_dash_sh1rokov@...` prompt), check if the file appeared:
+    ```bash
+    ls -l /mnt/data
+    ```
+If `test_file.txt` is NOT visible, the volume mount is broken.
+
+**Step 2: Restart the Docker Service**
+
+The most reliable way to fix this is to restart the Docker service on your VM. This will clear any corrupt state.
+
+1.  From your **VM terminal**, stop your current container by restarting Docker:
+    ```bash
+    sudo systemctl restart docker
+    ```
+
+2.  Wait 15-30 seconds for the service to fully restart.
+
+**Step 3: Start a Fresh Container**
+
+Start a new container using the full, correct command which includes the data disk volume mount:
+```bash
+# Make sure you are in your GRChombo directory on the VM
+cd ~/GRChombo
+docker run -v $(pwd):/my_project -v /mnt/data:/output -it us-central1-docker.pkg.dev/rock-wonder-466311-g6/grchombo-repo/grchombo-dev
+```
+
+After starting the new container and running your simulation, the output data should now appear correctly in `/mnt/data` on your VM.
