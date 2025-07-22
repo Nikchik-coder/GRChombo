@@ -43,19 +43,31 @@ Always perform a quick, cheap test run to ensure your setup works before launchi
    sudo apt-get install -y docker.io git
    ```
 
-3. Authenticate Docker:
+3. **(CRITICAL) Configure Docker Permissions to Avoid Auth Errors**
+
+   By default, running `docker` commands requires `sudo`. However, if you run `sudo docker pull`, it will fail with an `Unauthenticated` error because the `gcloud auth` command (in the next step) configures credentials for your local user (`${USER}`), not for the `root` user that `sudo` uses.
+
+   To fix this, add your user to the `docker` group. This allows you to run `docker` without `sudo`.
+
+   ```bash
+   sudo usermod -aG docker ${USER}
+   ```
+
+   **IMPORTANT**: You must start a new shell for this change to take effect. The easiest way is to **log out of your SSH session and log back in**. Alternatively, you can run `newgrp docker` to switch to the new group immediately.
+
+4. Authenticate Docker:
    ```bash
    # Replace us-central1 with the region of your Artifact Registry
    gcloud auth configure-docker us-central1-docker.pkg.dev
    ```
 
-4. Pull your custom image from the registry:
+5. Pull your custom image from the registry (note the absence of `sudo`):
    ```bash
    # Use the image name you built and pushed
    docker pull us-central1-docker.pkg.dev/rock-wonder-466311-g6/grchombo-repo/grchombo-dev
    ```
 
-5. Clone your project code:
+6. Clone your project code:
    ```bash
    git clone https://your-git-repo-url/GRChombo.git
    ```
@@ -212,6 +224,21 @@ Once the simulation is running inside the container, you can monitor its progres
     This will show you the current timestep and simulation time. Press `Ctrl+C` to stop watching.
 
 ## Phase 5: Troubleshooting
+
+### Problem: `docker pull` fails with `Unauthenticated` error
+
+**Symptom**: When you run `docker pull`, you get an error like:
+`denied: Unauthenticated request. Unauthenticated requests do not have permission "artifactregistry.repositories.downloadArtifacts"`
+
+**Cause**: This usually happens if you run the command as `sudo docker pull`. The `gcloud auth` command configures credentials for your user, but `sudo` runs the command as the `root` user, which doesn't have the required permissions.
+
+**Solution**:
+1.  Make sure you have added your user to the `docker` group as described in **Phase 2, Step 2.2**.
+    ```bash
+    sudo usermod -aG docker ${USER}
+    ```
+2.  **Log out of the VM and log back in** for the group change to take effect.
+3.  Run the `docker pull` command again **without `sudo`**.
 
 ### Problem: Output data does not appear in `/mnt/data`
 
