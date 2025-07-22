@@ -5,14 +5,11 @@
 import yt
 import os
 import matplotlib
+import argparse
 
 # =========================================================================
 # --- Configuration ---
 # =========================================================================
-
-# Set the path to your simulation's HDF5 files.
-# The wildcard "*" will match all files with that pattern.
-DATA_PATH_PATTERN = "/home/nik/GRChombo/Examples/Wormhole_MT/simulation_output/hdf5/Wormhole_p_*.3d.hdf5"
 
 # Define the list of all variables you are interested in plotting.
 # The script will try to plot each of these from every file. If a variable
@@ -75,7 +72,7 @@ def produce_slice_plot(ds, variable_name):
     slc.set_buff_size(1024)
     
     # Create the output directory if it doesn't exist
-    output_directory = variable_name
+    output_directory = f"plots_{variable_name}"
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
 
@@ -89,12 +86,25 @@ def main():
     # Use a non-interactive backend suitable for saving files
     matplotlib.use("Agg")
 
+    # Set up command-line argument parsing
+    parser = argparse.ArgumentParser(description="Plot 2D slices from GRChombo HDF5 files.")
+    parser.add_argument(
+        "--data_dir",
+        type=str,
+        default="/home/nik/GRChombo/Examples/Wormhole_MT/simulation_output/hdf5/",
+        help="Path to the directory containing HDF5 plot files."
+    )
+    args = parser.parse_args()
+
+    # Construct the file pattern from the provided data directory
+    data_path_pattern = os.path.join(args.data_dir, "Wormhole_p_*.3d.hdf5")
+
     # Load the dataset series. In serial mode, this creates a list of all files.
     try:
-        ts = yt.load(DATA_PATH_PATTERN)
-        print(f"Found {len(ts)} HDF5 files to process.")
+        ts = yt.load(data_path_pattern)
+        print(f"Found {len(ts)} HDF5 files to process in '{data_path_pattern}'")
     except Exception as e:
-        print(f"ERROR: Could not load data from pattern '{DATA_PATH_PATTERN}'")
+        print(f"ERROR: Could not load data from pattern '{data_path_pattern}'")
         print(f"Please check that the path is correct and files exist. Details: {e}")
         return
 
