@@ -7,7 +7,7 @@
 verbosity = 1
 
 # location / naming of output files
-output_path = "/home/nik/GRChombo_runs/Wormhole_Collapse_Medium/"
+output_path = "/output/wormhole_run_8_core/"
 chk_prefix = "Wormhole_medium_"
 plot_prefix = "Wormhole_p_medium_"
 
@@ -57,20 +57,20 @@ center = 96 96 96
 # 'N2' or 'N2_full' and 'N3' or 'N3_full' ( then dx_coarsest = L/N(max) )
 # NB - the N values need to be multiples of the block_factor
 
-N_full = 192
+N_full = 128
 L_full = 128
 
 # Maximum number of times you can regrid above coarsest level
-max_level = 6 # There are (max_level+1) grids, so min is zero
+max_level = 4 # There are (max_level+1) grids, so min is zero
 
 
 
 # Frequency of regridding at each level and thresholds on the tagging
 # Need one for each level except the top one, ie max_level items
 # Generally you do not need to regrid frequently on every level
-# Level Regridding:   0   1   2   3   4   5
-regrid_interval = 16 8 4 2 2 2
-regrid_thresholds = 0.1 0.1 0.1 0.1 0.1 0.1
+# Level Regridding:   0   1   2   3
+regrid_interval = 8 4 2 2
+regrid_thresholds = 0.1 0.1 0.1 0.1
 
 # Max and min box sizes
 max_box_size = 32
@@ -121,7 +121,7 @@ nonzero_asymptotic_values = 1.0 1.0 1.0 1.0 1.0
 
 # dt will be dx*dt_multiplier on each grid level
 dt_multiplier = 0.2
-stop_time = 100.0
+stop_time = 50.0
 max_steps = 400000
 
 # Spatial derivative order (only affects CCZ4 RHS)
@@ -185,7 +185,7 @@ AH_extra_vars = chi
 # AH_coords_prefix = "coords_AH"
 activate_extraction = 1
 num_extraction_radii = 3
-extraction_radii = 20.0 50.0 100.0
+extraction_radii = 5.0 10.0 20.0
 extraction_levels = 4 3 2
 num_points_phi = 24
 num_points_theta = 37

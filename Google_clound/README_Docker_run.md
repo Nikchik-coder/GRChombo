@@ -91,12 +91,16 @@ Always perform a quick, cheap test run to ensure your setup works before launchi
 
 4. Compile the code:
    ```bash
-   make
+   make all 
    ```
 
 5. Run the simulation with a test parameter file:
    ```bash
    mpirun -np 2 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPT.MPI.OPENMPCC.ex params_cheap.txt
+
+   mpirun -np 8 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPT.MPI.OPENMPCC.ex params.txt
+
+   docker run --shm-size=2g -it -v /mnt/data/wormhole_run_medium:/my_project us-central1-docker.pkg.dev/rock-wonder-466311-g6/grchombo-repo/grchombo-dev
    ```
    This should complete quickly and generate a small amount of data.
 
@@ -174,23 +178,37 @@ With your data disk prepared, you can now proceed to the final production run. W
 docker run -v $(pwd):/my_project -v /mnt/data:/output -it us-central1-docker.pkg.dev/rock-wonder-466311-g6/grchombo-repo/grchombo-dev
 ```
 
-To ensure all simulation data is written to the persistent disk, you must update your `params.txt` file.
+To ensure all simulation data is written to the persistent disk, you must update your `params.txt` file **inside the container**.
 
-1.  **Open your parameter file**, for example, `Examples/Wormhole_MT/params.txt`.
+1.  **Navigate to your example directory** (if you're not already there):
+    ```bash
+    cd /my_project/Examples/Wormhole_MT/
+    ```
 
-2.  **Find the `output_path` parameter**. It will look like this:
+2.  **Install a text editor**. The base Docker image is minimal and may not include one. You can install `nano` with this command:
+    ```bash
+    apt-get update && apt-get install -y nano
+    ```
+
+3.  **Open your parameter file** with `nano`:
+    ```bash
+    nano params.txt
+    ```
+
+4.  **Find the `output_path` parameter**. It will look like this:
     ```
     # location / naming of output files
     #output_path = "/home/nik/GRChombo_runs/Wormhole_Collapse"
     output_path = "simulation_output/"
     ```
 
-3.  **Change it to point to the `/output` directory** inside the container. We recommend creating a subdirectory for each run:
+5.  **Change it to point to the `/output` directory** inside the container. We recommend creating a subdirectory for each run:
     ```
     # location / naming of output files
     #output_path = "/home/nik/GRChombo_runs/Wormhole_Collapse"
     output_path = "/output/wormhole_run_01/"
     ```
+    Once edited, save the file in `nano` by pressing `Ctrl+X`, then `Y`, then `Enter`.
 
 Now, when you run the simulation, all HDF5 data, log files, and other outputs will be saved to `/mnt/data/wormhole_run_01` on your VM, which is your persistent data disk.
 
