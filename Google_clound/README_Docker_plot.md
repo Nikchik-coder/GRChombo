@@ -51,7 +51,10 @@ With the environment set up, you can now run any of the Python plotting scripts.
     python plot_wormhole.py --data_dir /mnt/data/wormhole_run_01/hdf5/
     ```
 
-3.  The script will process the data and save an image file (e.g., `wormhole_slice.png`) into the current directory (`~/GRChombo/Animation`). You can verify its creation with `ls -l`.
+3.  The script will process the data and save image files into new directories named `plots_<variable_name>` (e.g., `plots_chi`, `plots_Ham`). You can see the generated images by listing the contents of one of these new directories:
+    ```bash
+    ls -l plots_chi/
+    ```
 
 ## Step 3: Copy the Plot to Your Local Computer
 
@@ -59,20 +62,78 @@ Since the VM does not have a graphical user interface, you must copy the generat
 
 1.  **Open a new terminal on your LOCAL computer** (not the VM).
 
-2.  **Use the `gcloud compute scp` command** to securely copy the file. You will need your VM's instance name and zone.
+2.  **Use the `gcloud compute scp` command** to securely copy the files.
+
+    > **Important**: You must use the full, absolute path to the directory on the VM. The `~` shortcut does not work reliably with `scp` and may cause a "No such file or directory" error.
+
+    To copy an entire folder of plots (e.g., all `chi` plots), use the `--recurse` flag.
     ```bash
-    # Replace with your actual instance name and zone
-    gcloud compute scp YOUR_INSTANCE_NAME:~/GRChombo/Animation/wormhole_slice.png . --zone=YOUR_VM_ZONE
+    # Replace with your actual instance name, VM username, and zone
+    gcloud compute scp --recurse YOUR_INSTANCE_NAME:/home/YOUR_VM_USERNAME/GRChombo/Animation/plots_chi . --zone=YOUR_VM_ZONE
     ```
     - `YOUR_INSTANCE_NAME`: e.g., `instance-20250720-085524`
-    - `wormhole_slice.png`: The name of the plot file you want to copy.
-    - `.`: This final dot means "copy the file to my current local directory".
+    - `YOUR_VM_USERNAME`: The username on your VM (e.g., `nikita_dash_sh1rokov`).
+    - `plots_chi`: The name of the plot folder you want to copy.
+    - `.`: This final dot means "copy the folder to my current local directory".
 
-3.  The image file will now be on your local computer, ready to be viewed. You can repeat this `scp` command for any plots you generate.
+    For example, a complete, working command would look like this:
+    ```bash
+    gcloud compute scp --recurse instance-20250720-085524:/home/nikita_dash_sh1rokov/GRChombo/Animation/plots_chi . --zone=us-central1-c
+    ```
+
+3.  A new folder named `plots_chi` will now be on your local computer, containing all the generated images. You can repeat this `scp` command for any other plot directories you want to view.
+
+#### Finding Your Instance Name and Zone
+
+If you don't know your VM's instance name or zone, you can find them easily. On your **local computer's terminal**, run the following command:
+```bash
+gcloud compute instances list
+```
+This will display a table of all your VM instances. The `NAME` and `ZONE` columns will contain the information you need for the `scp` command.
 
 ### Deactivating the Virtual Environment
 
 When you are finished with plotting, you can deactivate the virtual environment on your VM by simply typing:
 ```bash
 deactivate
-``` 
+```
+
+### Cleaning Up Old Plots
+
+The plotting scripts will automatically overwrite any existing images if you run them again on the same data.
+
+If you are analyzing data from a new simulation and want to clear out all the old plots, you can delete all `plots_*` directories at once. From the `~/GRChombo/Animation` directory on your VM, run:
+```bash
+rm -rf plots_*
+```
+This command will remove all directories starting with `plots_`, giving you a clean slate for your next run.
+
+## Step 4: Creating Animations and Advanced Plots
+
+Beyond simple slice plots, the repository contains scripts for creating animations and analyzing specific data like gravitational waves.
+
+### Creating Animations from Slice Plots
+
+After you have generated a set of slice plots (e.g., `plots_chi`), you can combine them into a GIF animation.
+
+1.  **Ensure you are in the `Animation` directory** with the virtual environment active.
+
+2.  **Run the `create_animation.py` script**. You must tell it where to find the `plots_*` directories.
+    ```bash
+    # The '.' means look for 'plots_*' directories in the current folder
+    python create_animation.py all --plots_dir .
+    ```
+    This will find all `plots_*` directories and create a GIF for each one. The output animations will be saved in a new directory named `GRChombo_animations/run_<timestamp>/`.
+
+### Plotting Gravitational Waves
+
+If your simulation extracted Weyl4 data, you can analyze and plot it.
+
+1.  **Ensure you are in the `Animation` directory** with the virtual environment active.
+
+2.  **Run the `plot_gravitational_waves.py` script**. You must provide the path to your simulation's `data` directory, which contains the `Weyl4_*.dat` files.
+    ```bash
+    # Replace wormhole_run_01 with your simulation output folder name
+    python plot_gravitational_waves.py --data_dir /mnt/data/wormhole_run_01/data
+    ```
+    This script will create a new directory named `gw_plots/` containing several images of the gravitational wave signal analysis. It will also save processed data (like the calculated strain) into `gw_plots/processed_data/`.

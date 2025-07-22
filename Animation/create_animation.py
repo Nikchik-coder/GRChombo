@@ -172,7 +172,7 @@ def is_time_series_directory(directory):
     
     return has_time_pattern
 
-def get_available_fields():
+def get_available_fields(plots_dir):
     """
     Get all available field directories that contain PNG files suitable for animation
     
@@ -183,8 +183,9 @@ def get_available_fields():
     available_fields = []
     
     # Look for directories that contain PNG files
-    for item in os.listdir('.'):
-        if os.path.isdir(item):
+    for item in os.listdir(plots_dir):
+        full_path = os.path.join(plots_dir, item)
+        if os.path.isdir(full_path):
             if is_time_series_directory(item):
                 available_fields.append(item)
     
@@ -214,7 +215,7 @@ def check_image_compatibility(png_files):
     except Exception:
         return False
 
-def create_animation(field_name, output_dir=None, sim_type=None, duration=0.2):
+def create_animation(field_name, plots_dir, output_dir=None, sim_type=None, duration=0.2):
     """
     Create GIF animation from PNG files with organized saving
     
@@ -222,6 +223,8 @@ def create_animation(field_name, output_dir=None, sim_type=None, duration=0.2):
     -----------
     field_name : str
         Name of the field directory (chi, lapse, K, etc.)
+    plots_dir : str
+        The directory where the 'plots_*' subdirectories are located.
     output_dir : str, optional
         Output directory (auto-created if None)
     sim_type : str, optional
@@ -242,33 +245,36 @@ def create_animation(field_name, output_dir=None, sim_type=None, duration=0.2):
     if output_dir is None:
         output_dir = create_output_directory(sim_type)
     
+    # Construct the path to the specific field's plot directory
+    field_plot_dir = os.path.join(plots_dir, field_name)
+
     # Check if field directory exists
-    if not os.path.exists(field_name):
-        available_fields = get_available_fields()
-        print(f"Directory '{field_name}' not found!")
-        print(f"Available field directories: {available_fields}")
+    if not os.path.exists(field_plot_dir):
+        available_fields = get_available_fields(plots_dir)
+        print(f"Directory '{field_plot_dir}' not found!")
+        print(f"Available field directories in '{plots_dir}': {available_fields}")
         return None
     
     # Check if it's a time series directory
-    if not is_time_series_directory(field_name):
-        print(f"Directory '{field_name}' doesn't contain time series data suitable for animation.")
+    if not is_time_series_directory(field_plot_dir):
+        print(f"Directory '{field_plot_dir}' doesn't contain time series data suitable for animation.")
         print("Skipping this directory.")
         return None
     
     # Get all PNG files and sort them numerically
-    png_files = sorted(glob.glob(f"{field_name}/*.png"))
+    png_files = sorted(glob.glob(f"{field_plot_dir}/*.png"))
     
     if not png_files:
-        print(f"No PNG files found in {field_name}/")
+        print(f"No PNG files found in {field_plot_dir}/")
         return None
     
     if len(png_files) < 2:
-        print(f"Need at least 2 images for animation. Found {len(png_files)} in {field_name}/")
+        print(f"Need at least 2 images for animation. Found {len(png_files)} in {field_plot_dir}/")
         return None
     
     # Check image compatibility
     if not check_image_compatibility(png_files):
-        print(f"Images in {field_name}/ have different dimensions. Cannot create animation.")
+        print(f"Images in {field_plot_dir}/ have different dimensions. Cannot create animation.")
         return None
     
     print(f"Found {len(png_files)} images for {field_name}")
@@ -300,12 +306,14 @@ def create_animation(field_name, output_dir=None, sim_type=None, duration=0.2):
         print("This might be due to incompatible image formats or sizes.")
         return None
 
-def create_all_animations(output_dir=None, sim_type=None, duration=0.2):
+def create_all_animations(plots_dir, output_dir=None, sim_type=None, duration=0.2):
     """
     Create animations for all available field directories with organized saving
     
     Parameters:
     -----------
+    plots_dir : str
+        The directory where the 'plots_*' subdirectories are located.
     output_dir : str, optional
         Output directory (auto-created if None)
     sim_type : str, optional
@@ -317,10 +325,10 @@ def create_all_animations(output_dir=None, sim_type=None, duration=0.2):
     --------
     tuple : (output_directory, list_of_created_animations)
     """
-    available_fields = get_available_fields()
+    available_fields = get_available_fields(plots_dir)
     
     if not available_fields:
-        print("No field directories with time series PNG files found!")
+        print(f"No field directories with time series PNG files found in '{plots_dir}'!")
         print("Run the plotting script first.")
         return None, []
     
@@ -334,6 +342,7 @@ def create_all_animations(output_dir=None, sim_type=None, duration=0.2):
     
     print(f"🎬 Creating {sim_type} Animations")
     print(f"Output directory: {output_dir}")
+    print(f"Looking for plots in: {plots_dir}")
     print(f"Found {len(available_fields)} time series field directories: {available_fields}")
     print("Creating animations for all fields...\n")
     
@@ -343,7 +352,7 @@ def create_all_animations(output_dir=None, sim_type=None, duration=0.2):
     for field in available_fields:
         print(f"--- Creating animation for {field} ---")
         try:
-            animation_path = create_animation(field, output_dir, sim_type, duration)
+            animation_path = create_animation(field, plots_dir, output_dir, sim_type, duration)
             if animation_path:
                 successful_animations.append(animation_path)
             else:
@@ -377,10 +386,15 @@ def show_sample_plot(field_name, timestep=0):
         Which timestep to show (0 = first, -1 = last)
     """
     
+    # This function currently assumes plots are in the current directory.
+    # If plots_dir is passed, it should be used here.
+    # For now, keeping it as is, but it might need adjustment if plots_dir is always passed.
+    plots_dir = os.getcwd() # Default to current directory
+
     if not os.path.exists(field_name):
-        available_fields = get_available_fields()
+        available_fields = get_available_fields(plots_dir)
         print(f"Directory '{field_name}' not found!")
-        print(f"Available field directories: {available_fields}")
+        print(f"Available field directories in '{plots_dir}': {available_fields}")
         return
     
     png_files = sorted(glob.glob(f"{field_name}/*.png"))
@@ -414,7 +428,12 @@ def list_available_fields():
     """
     List all available field directories and their contents
     """
-    available_fields = get_available_fields()
+    # This function currently assumes plots are in the current directory.
+    # If plots_dir is passed, it should be used here.
+    # For now, keeping it as is, but it might need adjustment if plots_dir is always passed.
+    plots_dir = os.getcwd() # Default to current directory
+
+    available_fields = get_available_fields(plots_dir)
     
     if not available_fields:
         print("No field directories with time series PNG files found!")
@@ -427,8 +446,8 @@ def list_available_fields():
         print(f"  - {field}: {len(png_files)} plots")
     
     # Also show non-time series directories
-    all_dirs = [d for d in os.listdir('.') if os.path.isdir(d) and d not in ['venv', '__pycache__', '.git']]
-    non_time_series = [d for d in all_dirs if not is_time_series_directory(d) and glob.glob(f"{d}/*.png")]
+    all_dirs = [d for d in os.listdir(plots_dir) if os.path.isdir(os.path.join(plots_dir, d)) and d not in ['venv', '__pycache__', '.git']]
+    non_time_series = [d for d in all_dirs if not is_time_series_directory(d) and glob.glob(f"{os.path.join(plots_dir, d)}/*.png")]
     
     if non_time_series:
         print("\n📊 Directories with plots (not suitable for animation):")
@@ -444,6 +463,12 @@ def main():
     parser.add_argument('field', nargs='?', help='Field name (chi, lapse, K, etc.) or "all" for all fields')
     parser.add_argument('--output', '-o', help='Custom output directory')
     parser.add_argument('--sim-type', help='Simulation type (auto-detected if not specified)')
+    parser.add_argument(
+        '--plots_dir', 
+        type=str, 
+        default='.', 
+        help='The directory containing the "plots_*" folders. Defaults to the current directory.'
+    )
     parser.add_argument('--duration', '-d', type=float, default=0.2, 
                        help='Duration per frame (seconds)')
     parser.add_argument('--show', '-s', action='store_true', 
@@ -465,6 +490,7 @@ def main():
         list_available_fields()
         print(f"\n🎬 Creating animations for all available time series fields...")
         output_dir, animations = create_all_animations(
+            plots_dir=args.plots_dir,
             output_dir=args.output, 
             sim_type=args.sim_type,
             duration=args.duration
@@ -473,6 +499,7 @@ def main():
     
     if args.field.lower() == 'all':
         output_dir, animations = create_all_animations(
+            plots_dir=args.plots_dir,
             output_dir=args.output,
             sim_type=args.sim_type, 
             duration=args.duration
@@ -484,7 +511,13 @@ def main():
     else:
         sim_type = args.sim_type or detect_simulation_type()
         output_dir = args.output or create_output_directory(sim_type)
-        animation_path = create_animation(args.field, output_dir, sim_type, args.duration)
+        animation_path = create_animation(
+            args.field,
+            plots_dir=args.plots_dir,
+            output_dir=output_dir, 
+            sim_type=sim_type, 
+            duration=args.duration
+        )
         if animation_path:
             print(f"🎉 Animation created: {animation_path}")
 

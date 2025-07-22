@@ -12,13 +12,18 @@ from scipy.integrate import cumulative_trapezoid
 from scipy.signal import savgol_filter
 import os
 import glob
+import argparse
 
 class GravitationalWaveAnalyzer:
     """Class for analyzing gravitational wave data from Weyl4 modes"""
     
-    def __init__(self, data_dir=None):
-        """Initialize with data directory (auto-detected if None)"""
-        self.data_dir = self.find_data_directory(data_dir)
+    def __init__(self, data_dir):
+        """Initialize with data directory"""
+        self.data_dir = data_dir
+        if not os.path.exists(self.data_dir):
+            raise FileNotFoundError(
+                f"The specified data directory does not exist: {self.data_dir}"
+            )
         self.modes = {}
         self.strain = {}
         print(f"Initialized GW analyzer with data directory: {self.data_dir}")
@@ -514,14 +519,30 @@ class GravitationalWaveAnalyzer:
 
 def main():
     """Main analysis function"""
+    parser = argparse.ArgumentParser(description="Analyze gravitational wave data from GRChombo simulations.")
+    parser.add_argument(
+        "--data_dir",
+        type=str,
+        required=True,
+        help="Path to the directory containing the Weyl4_*.dat files."
+    )
+    parser.add_argument(
+        "--output_dir",
+        type=str,
+        default="gw_plots",
+        help="Directory to save the output plots and processed data."
+    )
+    args = parser.parse_args()
+    
     print("🌊 GRChombo Gravitational Wave Analysis")
     print("=" * 50)
     
-    # Set the data directory explicitly
-    data_dir = "/home/nik/GRChombo_runs/Wormhole_Collapse_Cheap/data"
-    
     # Initialize analyzer with explicit data directory
-    gw = GravitationalWaveAnalyzer(data_dir=data_dir)
+    try:
+        gw = GravitationalWaveAnalyzer(data_dir=args.data_dir)
+    except FileNotFoundError as e:
+        print(f"ERROR: {e}")
+        return
     
     # Load Weyl4 data
     gw.load_weyl4_data()
@@ -530,8 +551,8 @@ def main():
         print("\n❌ No Weyl4 data found.")
         print("Please check that your simulation has:")
         print("  - Weyl4 extraction enabled")
-        print("  - Output files in expected locations")
-        print("  - Proper file naming (Weyl4_mode_*.dat)")
+        print(f"  - Output files in '{args.data_dir}'")
+        print("  - Proper file naming (e.g., Weyl4_mode_22.dat)")
         return
     
     # Calculate strain
@@ -541,19 +562,22 @@ def main():
         print("\n❌ No strain data could be calculated.")
         return
     
-    # Create plots
-    print("\nCreating visualizations...")
-    gw.plot_weyl4_overview()
-    gw.plot_strain_analysis() 
-    gw.plot_inspiral_merger_ringdown()
+    # Create plots and save processed data
+    output_plots_dir = os.path.join(args.output_dir, "plots")
+    output_data_dir = os.path.join(args.output_dir, "processed_data")
     
-    # Save processed data
+    print("\nCreating visualizations...")
+    gw.plot_weyl4_overview(save_dir=output_plots_dir)
+    gw.plot_strain_analysis(save_dir=output_plots_dir)
+    gw.plot_inspiral_merger_ringdown(save_dir=output_plots_dir)
+    
     print("\nSaving processed data...")
-    gw.save_processed_data()
+    gw.save_processed_data(output_dir=output_data_dir)
     
     print("\n🎉 Gravitational wave analysis completed!")
-    print("Check the 'gw_plots/' directory for visualizations")
-    print("Check the 'gw_data/' directory for processed data files")
+    print(f"Check the '{output_plots_dir}' directory for visualizations")
+    print(f"Check the '{output_data_dir}' directory for processed data files")
+
 
 if __name__ == "__main__":
     main() 
