@@ -112,7 +112,7 @@ Always perform a quick, cheap test run to ensure your setup works before launchi
    ```bash
    mpirun -np 2 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPT.MPI.OPENMPCC.ex params_cheap.txt
 
-   mpirun -np 8 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPT.MPI.OPENMPCC.ex params.txt
+   mpirun -np 4 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPT.MPI.OPENMPCC.ex params.txt
 
    mpirun -np 8 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPT.MPI.OPENMPCC.ex params_cheap.txt
 
@@ -200,7 +200,7 @@ To ensure all simulation data is written to the persistent disk, you must update
 
 1.  **Navigate to your example directory** (if you're not already there):
     ```bash
-    cd /my_project/Examples/Wormhole_MT/
+    /my_project/Examples/Wormhole_MT/
     ```
 
 2.  **Install a text editor**. The base Docker image is minimal and may not include one. You can install `nano` with this command:
@@ -217,7 +217,7 @@ To ensure all simulation data is written to the persistent disk, you must update
     ```
     # location / naming of output files
     #output_path = "/home/nik/GRChombo_runs/Wormhole_Collapse"
-    output_path = "simulation_output/"
+    output_path = "simulacd tion_output/"
     ```
 
 5.  **Change it to point to the `/output` directory** inside the container. We recommend creating a subdirectory for each run:
@@ -340,3 +340,77 @@ After starting the new container and running your simulation, the output data sh
     ```
 2.  **Log out of the VM and log back in** for the group change to take effect.
 3.  Run the `docker pull` command again **without `sudo`**.
+
+## Phase 6: Running Long Simulations (Detaching from SSH)
+
+**Problem:** If you start a simulation directly in your SSH session and then close your computer or lose your internet connection, the simulation will be terminated.
+
+To run a simulation that continues after you disconnect, you must detach it from your SSH session. The two best tools for this are `nohup` (simple) and `tmux` (highly recommended).
+
+---
+
+### Option A: Using `nohup` (Simple)
+
+`nohup` ("no hang-up") is a command that prevents a process from being killed when you log out. It is best for simple, "fire-and-forget" simulations where you don't need to interact with the process.
+
+**How to Use:**
+
+1.  Start your simulation as you normally would, but add `nohup` to the beginning and an ampersand (`&`) to the end.
+
+    ```bash
+    # Inside the Docker container, in your example directory
+    nohup mpirun -np 8 ./Main_Wormhole_collapse...ex params.txt &
+    ```
+2.  The `&` puts the process in the background. All screen output is redirected to a file named `nohup.out`.
+3.  You can safely disconnect. To check the progress later, reconnect and view the log file:
+    ```bash
+    tail -f nohup.out
+    ```
+
+---
+
+### Option B: Using `tmux` (Recommended and More Powerful)
+
+`tmux` is a "terminal multiplexer." It creates persistent sessions on the VM that you can connect to and disconnect from at any time. This is the best method for long or important runs.
+
+**Step 1: Install `tmux` on the VM**
+
+You only need to do this once. Run this command from your **VM terminal** (not inside the container).
+```bash
+sudo apt-get update && sudo apt-get install -y tmux
+```
+
+**Step 2: Start a `tmux` Session**
+
+From your VM terminal, start a new session. It's good practice to give it a descriptive name.
+```bash
+tmux new -s grchombo_run
+```
+Your terminal will clear, and you will see a status bar at the bottom. You are now inside the `tmux` session.
+
+**Step 3: Run Your Simulation**
+
+Inside the `tmux` window, start your Docker container and run the simulation command as you normally would.
+```bash
+# Start the container
+docker run -v $(pwd):/my_project -v /mnt/data:/output -it ...
+
+# Inside the container, run the simulation
+cd /my_project/Examples/Wormhole_MT/
+mpirun -np 8 ./Main...ex params.txt
+```
+
+**Step 4: Detach and Disconnect**
+
+While the simulation is running, you can safely detach from the `tmux` session by pressing:
+**`Ctrl+b` then `d`** (Press `Ctrl` and `b` together, release them, then press `d`).
+
+You will be returned to your normal VM terminal. You can now close your SSH connection, and the simulation will continue running inside the `tmux` session.
+
+**Step 5: Reconnect to Your Session**
+
+At any time, you can SSH back into your VM and re-attach to your running session:
+```bash
+tmux attach -t grchombo_run
+```
+You will be reconnected to the terminal where your simulation is running, allowing you to see its live output.
