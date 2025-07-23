@@ -53,21 +53,35 @@ Always perform a quick, cheap test run to ensure your setup works before launchi
    sudo usermod -aG docker ${USER}
    ```
 
-   **IMPORTANT**: You must start a new shell for this change to take effect. The easiest way is to **log out of your SSH session and log back in**. Alternatively, you can run `newgrp docker` to switch to the new group immediately.
+4. **(CRITICAL) Refresh Your Shell Session**
 
-4. Authenticate Docker:
+   The `usermod` command added you to the `docker` group, but this change **will not take effect in your current session**. You must start a new shell to avoid the `permission denied` error when running `docker`.
+
+   **Option A (Recommended): Log Out and Log Back In**
+   This is the simplest and most reliable method. Close your current SSH connection, then reconnect to the VM.
+
+   **Option B (Quicker): Use `newgrp`**
+   If you do not want to log out, you can run the following command. This will start a *new sub-shell* with the correct group permissions.
+   ```bash
+   newgrp docker
+   ```
+   > **Note:** If you use this method, you must run all subsequent commands in the new shell that appears.
+
+5. **Authenticate Docker (In Your New Shell)**
+   Now that your user permissions are correct, you can configure Docker to access the Artifact Registry.
    ```bash
    # Replace us-central1 with the region of your Artifact Registry
    gcloud auth configure-docker us-central1-docker.pkg.dev
    ```
 
-5. Pull your custom image from the registry (note the absence of `sudo`):
+6. **Pull Your Custom Image**
+   Pull the image from the registry. Note that `sudo` is not required.
    ```bash
    # Use the image name you built and pushed
    docker pull us-central1-docker.pkg.dev/rock-wonder-466311-g6/grchombo-repo/grchombo-dev
    ```
 
-6. Clone your project code:
+7. **Clone Your Project Code**
    ```bash
    git clone https://your-git-repo-url/GRChombo.git
    ```
@@ -100,6 +114,8 @@ Always perform a quick, cheap test run to ensure your setup works before launchi
 
    mpirun -np 8 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPT.MPI.OPENMPCC.ex params.txt
 
+   mpirun -np 8 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPT.MPI.OPENMPCC.ex params_cheap.txt
+
    docker run --shm-size=2g -it -v /mnt/data/wormhole_run_medium:/my_project us-central1-docker.pkg.dev/rock-wonder-466311-g6/grchombo-repo/grchombo-dev
    ```
    This should complete quickly and generate a small amount of data.
@@ -107,25 +123,27 @@ Always perform a quick, cheap test run to ensure your setup works before launchi
 Phase 3: Adding a Persistent Disk for Simulation Data
 
 For production runs, you need a large, dedicated disk to store your simulation output. This keeps your data separate from the OS and prevents the boot disk from filling up.
-Step 3.1: Create and Attach the Data Disk
+### Step 3.1: Create and Attach the Data Disk
 
-    Stop your VM instance. You cannot attach a new disk while the VM is running.
+1.  **Stop your VM instance**. You cannot attach a new disk while the VM is running.
 
-    Navigate to Compute Engine > Disks and click CREATE DISK.
+2.  Navigate to **Compute Engine > Disks** and click **CREATE DISK**.
 
-    Configure the new disk:
+3.  Configure the new disk:
+    -   **Name**: `grchombo-data-disk-01`
+    -   **Size**: Choose a large size suitable for your output (e.g., 500 GB or 1 TB).
+    -   **Zone**: **CRITICAL**: Select the exact same zone as your VM instance.
 
-        Name: grchombo-data-disk-01
+4.  Click **Create**.
 
-        Size: Choose a large size suitable for your output (e.g., 500 GB or 1 TB).
+5.  Go back to the VM instances page, click **Edit** on your (stopped) VM, and under **Additional disks**, attach the `grchombo-data-disk-01` you just created.
 
-        Zone: CRITICAL: Select the exact same zone as your VM instance.
+    > **Troubleshooting Tip:** If you do not see your disk in the list of available disks to attach, try these steps:
+    > 1.  **Refresh the page.** The Google Cloud console can sometimes be slow to update.
+    > 2.  **Check the "Disks" page.** Make sure the "In use by" column for your disk is empty. A disk can only be attached to one VM at a time.
+    > 3.  **Verify the Zone again.** It is critical that the disk and the VM are in the exact same zone (e.g., `us-central1-a`).
 
-    Click Create.
-
-    Go back to the VM instances page, click Edit on your VM, and under Additional disks, attach the grchombo-data-disk-01 you just created.
-
-    Save the changes and Start your VM again.
+6.  Save the changes and **Start** your VM again.
 
 ### Step 3.2: Format and Mount the Disk on the VM
 
@@ -241,8 +259,73 @@ Once the simulation is running inside the container, you can monitor its progres
     ```
     This will show you the current timestep and simulation time. Press `Ctrl+C` to stop watching.
 
-## Phase 5: Troubleshooting
+## Phase 5: Debugging Common Issues
 
+This section covers the most common problems encountered when running simulations.
+
+### Issue: Simulation Data Does Not Appear in `/mnt/data`
+
+This is the most frequent problem. You start a simulation, but the output directory never appears on your persistent disk (`/mnt/data` on the VM). There are two likely causes.
+
+#### Cause A: Incorrect `output_path` in Parameter File
+
+The simulation writes data to the path specified by the `output_path` parameter in your `params.txt` or `params_cheap.txt` file. For data to be saved to the persistent disk, this path **must** be an absolute path starting with `/output/`.
+
+**Symptom:**
+- The simulation runs without error.
+- No new directory appears in `/mnt/data` on the VM.
+- If you `ls` the project directory *inside the container* (e.g., `/my_project/Examples/Wormhole_MT/`), you will find a `simulation_output` directory there.
+
+**Solution:**
+
+1.  **Stop the simulation** inside the container (`Ctrl+C`).
+2.  **Edit your parameter file** (e.g., `nano params_cheap.txt`).
+3.  **Change the `output_path`** to an absolute path.
+
+    - **Incorrect (relative path):**
+      ```
+      output_path = "simulation_output/"
+      ```
+    - **Correct (absolute path):**
+      ```
+      output_path = "/output/my_cheap_run/"
+      ```
+4.  **Save the file and restart the simulation.** The data will now be written to `/mnt/data/my_cheap_run/` on your VM.
+
+---
+
+#### Cause B: Silent Docker Volume Mount Failure
+
+You may encounter a rare but serious issue where the Docker volume mount (`-v /mnt/data:/output`) fails silently.
+
+**Symptom**:
+- You have verified that `output_path` is correct (e.g., `/output/my_run/`).
+- When you run `ls -l /output` **inside the container**, you can see your data directory.
+- However, when you run `ls -l /mnt/data` **on your VM**, the directory is missing.
+
+This means the link between the container's `/output` folder and the VM's `/mnt/data` folder is broken.
+
+**Solution: Restart the Docker Service**
+
+The most reliable way to fix this is to restart the Docker service on your VM, which will clear any corrupt state.
+
+1.  From your **VM terminal**, stop your current container by restarting Docker:
+    ```bash
+    sudo systemctl restart docker
+    ```
+
+2.  Wait 15-30 seconds for the service to fully restart.
+
+3.  **Start a Fresh Container**. Use the full, correct command which includes the data disk volume mount:
+    ```bash
+    # Make sure you are in your GRChombo directory on the VM
+    cd ~/GRChombo
+    docker run -v $(pwd):/my_project -v /mnt/data:/output -it us-central1-docker.pkg.dev/rock-wonder-466311-g6/grchombo-repo/grchombo-dev
+    ```
+
+After starting the new container and running your simulation, the output data should now appear correctly in `/mnt/data` on your VM.
+
+---
 ### Problem: `docker pull` fails with `Unauthenticated` error
 
 **Symptom**: When you run `docker pull`, you get an error like:
@@ -257,45 +340,3 @@ Once the simulation is running inside the container, you can monitor its progres
     ```
 2.  **Log out of the VM and log back in** for the group change to take effect.
 3.  Run the `docker pull` command again **without `sudo`**.
-
-### Problem: Output data does not appear in `/mnt/data`
-
-You may encounter a rare but serious issue where the Docker volume mount fails silently.
-
-**Symptom**: You have followed all the steps, set `output_path` correctly, and started the simulation. When you run `ls -l /output` **inside the container**, you can see your data directory (e.g., `wormhole_run_01`). However, when you run `ls -l /mnt/data` **on your VM**, the directory is missing.
-
-This means the link between the container's `/output` folder and the VM's `/mnt/data` folder is broken.
-
-**Step 1: Confirm the Diagnosis**
-
-1.  From **inside the Docker container** (`root@...` prompt), try to create a test file:
-    ```bash
-    touch /output/test_file.txt
-    ```
-2.  From your **VM terminal** (`nikita_dash_sh1rokov@...` prompt), check if the file appeared:
-    ```bash
-    ls -l /mnt/data
-    ```
-If `test_file.txt` is NOT visible, the volume mount is broken.
-
-**Step 2: Restart the Docker Service**
-
-The most reliable way to fix this is to restart the Docker service on your VM. This will clear any corrupt state.
-
-1.  From your **VM terminal**, stop your current container by restarting Docker:
-    ```bash
-    sudo systemctl restart docker
-    ```
-
-2.  Wait 15-30 seconds for the service to fully restart.
-
-**Step 3: Start a Fresh Container**
-
-Start a new container using the full, correct command which includes the data disk volume mount:
-```bash
-# Make sure you are in your GRChombo directory on the VM
-cd ~/GRChombo
-docker run -v $(pwd):/my_project -v /mnt/data:/output -it us-central1-docker.pkg.dev/rock-wonder-466311-g6/grchombo-repo/grchombo-dev
-```
-
-After starting the new container and running your simulation, the output data should now appear correctly in `/mnt/data` on your VM.
