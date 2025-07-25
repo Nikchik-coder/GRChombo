@@ -154,8 +154,27 @@ For production runs, you need a dedicated disk for your data.
     -   Find the disk name (e.g., `/dev/sdb`) with `lsblk`.
     -   Format it: `sudo mkfs.ext4 /dev/sdb`
     -   Create a mount point: `sudo mkdir -p /mnt/data`
-    -   Mount it and set permissions: `sudo mount /dev/sdb /mnt/data && sudo chmod 777 /mnt/data`
-    -   (Recommended) Configure automatic mounting by adding the disk's UUID to `/etc/fstab`.
+    -   Mount it temporarily and set permissions: `sudo mount /dev/sdb /mnt/data && sudo chmod 777 /mnt/data`
+
+    > **IMPORTANT:** This `mount` command is temporary and will not survive a VM reboot. If you start a simulation without making the mount permanent, all data will be written to the small primary disk of the VM, which can quickly fill up and cause the simulation and the VM to crash.
+
+3.  **Verify and Make the Mount Permanent**
+    -   **Verify the Mount:**
+        Before proceeding, verify that the disk is correctly mounted. Run `df -h`. The output should include a new line for your disk, similar to this:
+        ```bash
+        # Your output will now look something like this:
+        Filesystem      Size  Used Avail Use% Mounted on
+        ... (all the other lines) ...
+        /dev/sdb        100G  60M   95G   1% /mnt/data
+        ```
+        If you do not see your disk (`/dev/sdb` in this example) listed and mounted on `/mnt/data`, something is wrong. Do not proceed until it is correctly mounted.
+    -   **Make the Mount Permanent:**
+        To ensure the disk is automatically mounted every time the VM starts, you must add it to the `/etc/fstab` file. This is the recommended way to do it:
+        ```bash
+        # This command finds the unique ID of your disk and adds it to the fstab file
+        echo 'UUID=$(sudo blkid -s UUID -o value /dev/sdb) /mnt/data ext4 defaults,nofail 0 2' | sudo tee -a /etc/fstab
+        ```
+        This command makes the mount permanent and robust against reboots.
 
 **How to Monitor or Stop a Running Simulation**
 
@@ -167,15 +186,41 @@ For production runs, you need a dedicated disk for your data.
 
 **Troubleshooting Common Issues**
 
+-   **Problem:** The simulation is running, but my persistent disk seems empty and the main VM disk is filling up.
+    -   **Cause:** The `mount` command for your persistent disk was temporary, failed, or was undone by a reboot. Your simulation is writing all its data to the small 10GB root disk (`/dev/sda1`) instead of your large persistent disk. When you create a directory like `sudo mkdir -p /mnt/data`, it is just a normal, empty folder on your root filesystem. If the persistent disk is not mounted over it, Docker will happily use this folder, filling up the root disk.
+    -   **Solution: How to Fix an Incorrect Mount**
+        If you let the simulation continue, your root disk will become 100% full, and the simulation (and possibly the entire VM) will crash.
+        1.  **Stop the Running Simulation:**
+            Find the container ID and then stop it to prevent it from writing more data.
+            ```bash
+            # Find the container ID
+            docker ps
+
+            # Stop the container using its ID
+            docker stop <your_container_id>
+            ```
+        2.  **Mount the Disk Correctly:**
+            Properly mount the persistent disk to the mount point, then verify the mount was successful with `df -h`.
+            ```bash
+            sudo mount /dev/sdb /mnt/data
+            ```
+        3.  **Clean Up the Root Disk (Optional but Recommended):**
+            The data written to the root disk is now "hidden" under the mount point, but it's still taking up space. To reclaim it:
+            ```bash
+            # Unmount the big disk temporarily
+            sudo umount /mnt/data
+
+            # !! DANGER !! This will permanently delete the simulation data written so far.
+            # Make sure you are in the right directory before running!
+            sudo rm -rf /mnt/data/*
+
+            # Re-mount the big disk
+            sudo mount /dev/sdb /mnt/data
+            ```
+        4.  **Make the Mount Permanent:**
+            Follow the instructions in **Step 3** above to add the disk to `/etc/fstab` to prevent this from happening again.
+        5.  **Restart your simulation.** All output will now go to the correct disk.
+
 -   **Problem:** `docker pull` fails with `permission denied`.
     -   **Cause:** Your shell session hasn't recognized that you were added to the `docker` group.
     -   **Solution:** Log out of the VM and log back in.
-
--   **Problem:** Simulation data doesn't appear in `/mnt/data` on the VM, even though `output_path` is correct.
-    -   **Cause:** A "silent volume mount failure" in Docker. The link between the container (`/output`) and the VM (`/mnt/data`) is broken.
-    -   **Solution:** Restart the Docker service on the VM. This will kill all running containers.
-        ```bash
-        # Run this on the VM, not in a container
-        sudo systemctl restart docker
-        ```
-    -   Then, start a fresh `tmux` session and rerun your workflow from Phase 3.
