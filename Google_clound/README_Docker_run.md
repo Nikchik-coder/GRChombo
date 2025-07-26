@@ -48,6 +48,7 @@ Complete these steps once for each new VM instance.
     -   Clone your GRChombo project from your Git repository.
         ```bash
         git clone https://your-git-repo-url/GRChombo.git
+        git clone https://github.com/Nikchik-coder/GRChombo.git
         ```
 
 ## Phase 3: The Core Simulation Workflow
@@ -75,13 +76,14 @@ cd GRChombo/
 Choose **one** of the following commands:
 
 -   **For a quick test** (output is discarded when the container stops):
+    > Note: `--shm-size=2g` is important for MPI. It gives the container enough shared memory for the processes to communicate efficiently.
     ```bash
-    docker run -v $(pwd):/my_project -it us-central1-docker.pkg.dev/rock-wonder-466311-g6/grchombo-repo/grchombo-dev
+    docker run --shm-size=2g -v $(pwd):/my_project -it us-central1-docker.pkg.dev/rock-wonder-466311-g6/grchombo-repo/grchombo-dev
     ```
 -   **For a production run** (output is saved to your persistent disk):
     > First, make sure you have created and mounted a persistent disk at `/mnt/data`. (See Phase 4).
     ```bash
-    docker run -v $(pwd):/my_project -v /mnt/data:/output -it us-central1-docker.pkg.dev/rock-wonder-466311-g6/grchombo-repo/grchombo-dev
+    docker run --shm-size=2g -v $(pwd):/my_project -v /mnt/data:/output -it us-central1-docker.pkg.dev/rock-wonder-466311-g6/grchombo-repo/grchombo-dev
     ```
 
 **Step 3: Compile and Configure**
@@ -109,9 +111,39 @@ You are now inside the Docker container (`root@...` prompt).
 1.  **Launch the simulation:**
     ```bash
     mpirun -np 8 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPT.MPI.OPENMPCC.ex params.txt
-
-    mpirun -np 8 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPT.MPI.OPENMPCC.ex params_cheap.txt
     ```
+
+    > **Note on Performance and CPU Configuration:**
+    > The performance of your simulation depends heavily on the problem size (i.e., the settings in your `params.txt` file) and how you configure the `mpirun` command to use the VM's CPUs.
+    >
+    > **Optimizing for your VM's CPUs (e.g., a 60-vCPU machine)**
+    >
+    > Using `-np 60` on a 60-vCPU machine is **not always the fastest option**. Most cloud VMs use hyper-threading, where 1 physical CPU core is presented as 2 vCPUs. This means a 60-vCPU instance typically has **30 physical cores**. Running too many separate processes can lead to high communication overhead and resource contention.
+    >
+    > The GRChombo executable is built for **hybrid parallelism (MPI + OpenMP)**. The best performance is often achieved by running **one MPI rank per physical core** and using OpenMP threads to utilize all the vCPUs on that core.
+    >
+    > Here are configurations to benchmark on a 60-vCPU machine. Run each for 15-20 minutes and see which completes the most timesteps.
+    >
+    > -   **Option 1: Pure MPI (High Communication)**
+    >     One MPI process per vCPU. Simple, but can be slow due to communication overhead.
+    >     ```bash
+    >     mpirun -np 60 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPT.MPI.OPENMPCC.ex params.txt
+    >     ```
+    > -   **Option 2: One MPI Rank per Physical Core**
+    >     Reduces communication overhead but may leave some CPU resources idle.
+    >     ```bash
+    >     mpirun -np 30 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPT.MPI.OPENMPCC.ex params.txt
+    >     ```
+    > -   **Option 3: Hybrid MPI + OpenMP (Recommended for Benchmarking)**
+    >     Often the best balance. One MPI rank per physical core, with 2 OpenMP threads each to saturate the vCPUs.
+    >     ```bash
+    >     # First, set the number of threads for OpenMP
+    >     export OMP_NUM_THREADS=2
+    >
+    >     # Then run with 30 MPI ranks (one for each physical core)
+    >     mpirun -np 30 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPT.MPI.OPENMPCC.ex params.txt
+    >     ```
+
 2.  **Detach from the session:**
     Press **`Ctrl+b` then `d`**. You can now safely close your SSH window.
 
@@ -151,10 +183,27 @@ For production runs, you need a dedicated disk for your data.
     -   Start your VM again.
 2.  **Format and Mount Disk (on VM):**
     -   SSH into your VM.
-    -   Find the disk name (e.g., `/dev/sdb`) with `lsblk`.
-    -   Format it: `sudo mkfs.ext4 /dev/sdb`
+    -   Find your data disk's name with `lsblk`. It will be the large disk that is **not** mounted (e.g., `sda`, `sdb`). **Identify the correct device name for your data disk and use it in the following steps.** In the example `lsblk` output below, the OS is on `/dev/sdb` and the unformatted 100G data disk is `/dev/sda`.
+        ```bash
+        $ lsblk
+        NAME    MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+        sda       8:0    0  100G  0 disk 
+        sdb       8:16   0   10G  0 disk 
+        ├─sdb1    8:17   0  9.9G  0 part /
+        ├─sdb14   8:30   0    3M  0 part 
+        └─sdb15   8:31   0  124M  0 part /boot/efi
+        ```
+    -   Format your data disk. **Use the device name you identified above.**
+        ```bash
+        # Replace /dev/sda with your data disk's name
+        sudo mkfs.ext4 /dev/sda
+        ```
     -   Create a mount point: `sudo mkdir -p /mnt/data`
-    -   Mount it temporarily and set permissions: `sudo mount /dev/sdb /mnt/data && sudo chmod 777 /mnt/data`
+    -   Mount it temporarily and set permissions:
+        ```bash
+        # Replace /dev/sda with your data disk's name
+        sudo mount /dev/sda /mnt/data && sudo chmod 777 /mnt/data
+        ```
 
     > **IMPORTANT:** This `mount` command is temporary and will not survive a VM reboot. If you start a simulation without making the mount permanent, all data will be written to the small primary disk of the VM, which can quickly fill up and cause the simulation and the VM to crash.
 
@@ -165,14 +214,15 @@ For production runs, you need a dedicated disk for your data.
         # Your output will now look something like this:
         Filesystem      Size  Used Avail Use% Mounted on
         ... (all the other lines) ...
-        /dev/sdb        100G  60M   95G   1% /mnt/data
+        /dev/sda        100G  60M   95G   1% /mnt/data
         ```
-        If you do not see your disk (`/dev/sdb` in this example) listed and mounted on `/mnt/data`, something is wrong. Do not proceed until it is correctly mounted.
+        If you do not see your disk (`/dev/sda` in this example) listed and mounted on `/mnt/data`, something is wrong. Do not proceed until it is correctly mounted.
     -   **Make the Mount Permanent:**
         To ensure the disk is automatically mounted every time the VM starts, you must add it to the `/etc/fstab` file. This is the recommended way to do it:
         ```bash
         # This command finds the unique ID of your disk and adds it to the fstab file
-        echo 'UUID=$(sudo blkid -s UUID -o value /dev/sdb) /mnt/data ext4 defaults,nofail 0 2' | sudo tee -a /etc/fstab
+        # Make sure to replace /dev/sda with your data disk's name if it is different
+        echo "UUID=$(sudo blkid -s UUID -o value /dev/sda) /mnt/data ext4 defaults,nofail 0 2" | sudo tee -a /etc/fstab
         ```
         This command makes the mount permanent and robust against reboots.
 
@@ -202,7 +252,8 @@ For production runs, you need a dedicated disk for your data.
         2.  **Mount the Disk Correctly:**
             Properly mount the persistent disk to the mount point, then verify the mount was successful with `df -h`.
             ```bash
-            sudo mount /dev/sdb /mnt/data
+            # Replace /dev/sda with your data disk's name
+            sudo mount /dev/sda /mnt/data
             ```
         3.  **Clean Up the Root Disk (Optional but Recommended):**
             The data written to the root disk is now "hidden" under the mount point, but it's still taking up space. To reclaim it:
@@ -215,7 +266,8 @@ For production runs, you need a dedicated disk for your data.
             sudo rm -rf /mnt/data/*
 
             # Re-mount the big disk
-            sudo mount /dev/sdb /mnt/data
+            # Replace /dev/sda with your data disk's name
+            sudo mount /dev/sda /mnt/data
             ```
         4.  **Make the Mount Permanent:**
             Follow the instructions in **Step 3** above to add the disk to `/etc/fstab` to prevent this from happening again.

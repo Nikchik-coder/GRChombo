@@ -48,7 +48,7 @@ With the environment set up, you can now run any of the Python plotting scripts.
 2.  **Run a plotting script**. As an example, let's use `plot_wormhole.py`. You must provide the path to your simulation data on the persistent disk (`/mnt/data/...`).
     ```bash
     # Replace wormhole_run_01 with the name of your simulation output folder
-    python plot_wormhole.py --data_dir /mnt/data/wormhole_run_01/hdf5/
+    python plot_wormhole.py --data_dir /mnt/data/wormhole_run_cheap/hdf5/
 
     python plot_wormhole.py --data_dir /mnt/data/wormhole_run_medium/hdf5/
 
@@ -85,7 +85,7 @@ Since the VM does not have a graphical user interface, you must copy the generat
 
     For example, a complete, working command would look like this:
     ```bash
-    gcloud compute scp --recurse instance-20250723-185724 :/home/nikita_dash_sh1rokov/GRChombo/Animation/plots_chi . --zone=us-central1-c
+    gcloud compute scp --recurse instance-20250723-185724:/home/nikita_dash_sh1rokov/GRChombo/Animation/plots_chi . --zone=us-central1-c
 
     gcloud compute scp --recurse instance-20250723-185724:/home/nikita_dash_sh1rokov/GRChombo/Animation/GRChombo_animations . --zone=us-central1-c
     ```
