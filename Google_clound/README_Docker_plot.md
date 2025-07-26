@@ -49,6 +49,13 @@ With the environment set up, you can now run any of the Python plotting scripts.
     ```bash
     # Replace wormhole_run_01 with the name of your simulation output folder
     python plot_wormhole.py --data_dir /mnt/data/wormhole_run_01/hdf5/
+
+    python plot_wormhole.py --data_dir /mnt/data/wormhole_run_cheap/hdf5/
+
+    python create_animation.py all
+
+
+
     ```
 
 3.  The script will process the data and save image files into new directories named `plots_<variable_name>` (e.g., `plots_chi`, `plots_Ham`). You can see the generated images by listing the contents of one of these new directories:
@@ -80,7 +87,7 @@ Since the VM does not have a graphical user interface, you must copy the generat
     ```bash
     gcloud compute scp --recurse instance-20250720-085524:/home/nikita_dash_sh1rokov/GRChombo/Animation/plots_chi . --zone=us-central1-c
 
-    gcloud compute scp --recurse instance-20250720-085524:/home/nikita_dash_sh1rokov/GRChombo/Animation/GRChombo_animations . --zone=us-central1-c
+    gcloud compute scp --recurse instance-20250723-185724:/home/nikita_dash_sh1rokov/GRChombo/Animation/GRChombo_animations . --zone=us-central1-c
     ```
 
 3.  A new folder named `plots_chi` will now be on your local computer, containing all the generated images. You can repeat this `scp` command for any other plot directories you want to view.

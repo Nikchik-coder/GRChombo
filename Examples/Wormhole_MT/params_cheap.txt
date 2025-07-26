@@ -58,6 +58,8 @@ tag_buffer_size = 3
 #################################################
 # Extraction parameters
 activate_extraction = 1 # Add this line to turn on extraction
+write_extraction = 1
+extraction_file_prefix = "Weyl4data"
 
 #################################################
 # Extraction parameters (ADD THIS ENTIRE NEW SECTION)

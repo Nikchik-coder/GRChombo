@@ -25,7 +25,7 @@ VARIABLES_TO_PLOT = [
 SLICE_AXIS = "z"
 
 # Set the width of the plot window in code units.
-PLOT_WIDTH = 32.0
+PLOT_WIDTH = 128.0
 
 # =========================================================================
 # --- Main Script Logic (no changes needed below) ---
