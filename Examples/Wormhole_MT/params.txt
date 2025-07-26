@@ -44,7 +44,7 @@ K_amplitude = -0.05
 K_width = 2.0
 regularization_radius = 0.01
 
-center = 64 64 64
+center = 32 32 32
 
 #################################################
 # Grid parameters
@@ -57,8 +57,8 @@ center = 64 64 64
 # 'N2' or 'N2_full' and 'N3' or 'N3_full' ( then dx_coarsest = L/N(max) )
 # NB - the N values need to be multiples of the block_factor
 
-N_full = 384
-L_full = 128
+N_full = 192
+L_full = 64
 
 # Maximum number of times you can regrid above coarsest level
 max_level = 4 # There are (max_level+1) grids, so min is zero

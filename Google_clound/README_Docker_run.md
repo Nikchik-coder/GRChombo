@@ -230,6 +230,31 @@ For production runs, you need a dedicated disk for your data.
         ```
         This command makes the mount permanent and robust against reboots.
 
+**How to Resize a Persistent Data Disk**
+
+If your simulation starts running out of space, you can increase the size of your persistent disk in the Google Cloud Console. However, the VM's operating system will not use the new space automatically. You need to resize the filesystem.
+
+1.  **Increase Disk Size:** In the Google Cloud Console, go to your VM's details, find the attached persistent disk, and edit its size (e.g., from 100GB to 200GB).
+2.  **Resize the Filesystem (on VM):**
+    This command tells the filesystem to grow to fill the new space on the disk. For `ext4` filesystems, this is safe to do while the disk is mounted and in use.
+    ```bash
+    # Replace /dev/sda with your data disk's name if different
+    sudo resize2fs /dev/sda
+    ```
+3.  **Verify the New Size:**
+    Run `df -h` again. You should now see the larger size reflected for your mounted disk.
+    ```bash
+    # Before
+    $ df -h
+    Filesystem      Size  Used Avail Use% Mounted on
+    /dev/sda         98G   23G   71G  25% /mnt/data
+
+    # After resize2fs
+    $ df -h
+    Filesystem      Size  Used Avail Use% Mounted on
+    /dev/sda        196G   23G  164G  13% /mnt/data
+    ```
+
 **How to Monitor or Stop a Running Simulation**
 
 1.  **Reconnect to the Session:**
