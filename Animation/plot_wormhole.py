@@ -24,8 +24,7 @@ VARIABLES_TO_PLOT = [
 # Set the axis for the 2D slice plot ("x", "y", or "z")
 SLICE_AXIS = "z"
 
-# Set the width of the plot window in code units.
-PLOT_WIDTH = 128.0
+# The plot width is now determined automatically from the data.
 
 # =========================================================================
 # --- Main Script Logic (no changes needed below) ---
@@ -49,8 +48,12 @@ def produce_slice_plot(ds, variable_name):
 
     print(f"  + Plotting '{variable_name}'...")
     
-    # Create the SlicePlot object
+    # Automatically determine plot center and width from the data
     center = get_center(ds)
+    # Assumes a cubic domain, takes the width along the x-axis.
+    plot_width = ds.domain_width[0].to_value()
+
+    # Create the SlicePlot object
     slc = yt.SlicePlot(ds, SLICE_AXIS, ('chombo', variable_name), center=center)
     
     # --- Apply specific visual settings for different variables ---
@@ -68,7 +71,7 @@ def produce_slice_plot(ds, variable_name):
     slc.annotate_title(f"{variable_name} at t = {ds.current_time:.3f}")
     
     # Set plot dimensions and resolution
-    slc.set_width(PLOT_WIDTH)
+    slc.set_width(plot_width)
     slc.set_buff_size(1024)
     
     # Create the output directory if it doesn't exist
