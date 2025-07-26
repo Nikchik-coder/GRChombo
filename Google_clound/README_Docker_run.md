@@ -127,12 +127,16 @@ You are now inside the Docker container (`root@...` prompt).
     > -   **Option 1: Pure MPI (High Communication)**
     >     One MPI process per vCPU. Simple, but can be slow due to communication overhead.
     >     ```bash
-    >     mpirun -np 60 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPT.MPI.OPENMPCC.ex params.txt
+    mpirun -np 60 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPT.MPI.OPENMPCC.ex params.txt
+
+    mpirun -np 60 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPT.MPI.OPENMPCC.ex params_cheap.txt
     >     ```
     > -   **Option 2: One MPI Rank per Physical Core**
     >     Reduces communication overhead but may leave some CPU resources idle.
     >     ```bash
-    >     mpirun -np 30 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPT.MPI.OPENMPCC.ex params.txt
+    mpirun -np 30 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPT.MPI.OPENMPCC.ex params.txt
+
+    mpirun -np 30 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPT.MPI.OPENMPCC.ex params_cheap.txt
     >     ```
     > -   **Option 3: Hybrid MPI + OpenMP (Recommended for Benchmarking)**
     >     Often the best balance. One MPI rank per physical core, with 2 OpenMP threads each to saturate the vCPUs.
@@ -141,7 +145,7 @@ You are now inside the Docker container (`root@...` prompt).
     >     export OMP_NUM_THREADS=2
     >
     >     # Then run with 30 MPI ranks (one for each physical core)
-    >     mpirun -np 30 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPT.MPI.OPENMPCC.ex params.txt
+    mpirun -np 30 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPT.MPI.OPENMPCC.ex params.txt
     >     ```
 
 2.  **Detach from the session:**
