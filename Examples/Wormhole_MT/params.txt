@@ -44,7 +44,7 @@ K_amplitude = -0.1
 K_width = 2.0
 regularization_radius = 0.01
 
-center = 96 96 96
+center = 64 64 64
 
 #################################################
 # Grid parameters
@@ -57,7 +57,7 @@ center = 96 96 96
 # 'N2' or 'N2_full' and 'N3' or 'N3_full' ( then dx_coarsest = L/N(max) )
 # NB - the N values need to be multiples of the block_factor
 
-N_full = 128
+N_full = 256
 L_full = 128
 
 # Maximum number of times you can regrid above coarsest level
@@ -141,7 +141,7 @@ eta = 1.0 # eta of gamma driver, should be of order ~1/M_ADM of spacetime
 
 # CCZ4 parameters
 formulation = 0 # 1 for BSSN, 0 for CCZ4
-kappa1 = 0.02
+kappa1 = 0.1
 kappa2 = 0.
 kappa3 = 1.
 covariantZ4 = 1 # 0: keep kappa1; 1 [default]: replace kappa1 -> kappa1/lapse
@@ -162,7 +162,7 @@ AH_solve_interval = 5
 AH_print_interval = 1
 AH_track_center = true
 AH_predict_origin = true
-# AH_level_to_run = 0
+AH_level_to_run = 6
 # AH_allow_re_attempt = 0
 AH_stop_if_max_fails = 0
 # AH_start_time = 0.
@@ -186,7 +186,7 @@ AH_extra_vars = chi
 activate_extraction = 1
 num_extraction_radii = 3
 extraction_radii = 5.0 10.0 20.0
-extraction_levels = 4 3 2
+extraction_levels = 6 5 4
 num_points_phi = 24
 num_points_theta = 37
 num_modes = 3
