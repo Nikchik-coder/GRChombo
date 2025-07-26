@@ -40,7 +40,7 @@ redshift_constant = 0.0 # The constant redshift, Phi0. 0 = no tidal forces.
 
 # Initial "squeeze" for collapse
 # A negative amplitude means collapse. Set to 0 for collapse via numerical noise only.
-K_amplitude = -0.05
+K_amplitude = -0.1
 K_width = 2.0
 regularization_radius = 0.01
 
@@ -140,7 +140,7 @@ shift_Gamma_coeff = 0.75
 eta = 1.0 # eta of gamma driver, should be of order ~1/M_ADM of spacetime
 
 # CCZ4 parameters
-formulation = 0 # 1 for BSSN, 0 for CCZ4
+formulation = 1 # 1 for BSSN, 0 for CCZ4
 kappa1 = 0.1
 kappa2 = 0.
 kappa3 = 1.

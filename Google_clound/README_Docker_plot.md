@@ -90,7 +90,7 @@ Since the VM does not have a graphical user interface, you must copy the generat
     ```bash
     gcloud compute scp --recurse instance-20250726-070656:/home/nikita_dash_sh1rokov/GRChombo/Animation/plots_chi . --zone=us-central1-c
 
-    gcloud compute scp --recurse instance-20250723-185724:/home/nikita_dash_sh1rokov/GRChombo/Animation/GRChombo_animations . --zone=us-central1-c
+    gcloud compute scp --recurse instance-20250726-070656:/home/nikita_dash_sh1rokov/GRChombo/Animation/GRChombo_animations . --zone=us-central1-c
     ```
 
 3.  A new folder named `plots_chi` will now be on your local computer, containing all the generated images. You can repeat this `scp` command for any other plot directories you want to view.
