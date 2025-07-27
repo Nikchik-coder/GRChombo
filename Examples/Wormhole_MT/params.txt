@@ -98,7 +98,7 @@ dt_multiplier = 0.2
 stop_time = 100.0
 # max_steps is not needed if stop_time is set
 
-max_spatial_derivative_order = 4
+max_spatial_derivative_order = 6
 nan_check = 1
 
 # No changes needed for gauge parameters
