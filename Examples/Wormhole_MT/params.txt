@@ -38,7 +38,7 @@ regularization_radius = 0.01
 # Grid parameters (HIGH RESOLUTION FOR SCIENCE)
 
 # Finer base grid
-N_full = 128
+N_full = 192
 L_full = 32
 
 # More refinement levels for higher resolution at the throat.
