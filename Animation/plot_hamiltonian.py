@@ -108,7 +108,6 @@ def find_hamiltonian_files(pattern="Wormhole_p_*.3d.hdf5", base_dir=None):
     if not files:
         # Try common subdirectories
         search_dirs = [
-            "/home/nik/GRChombo_runs/Wormhole_Collapse/hdf5/",
             "hdf5", "output", "data", "../hdf5", "../output"
         ]
         for subdir in search_dirs:
@@ -255,7 +254,7 @@ def main():
     parser.add_argument(
         "--base_dir",
         type=str,
-        default="/home/nik/GRChombo_runs/Wormhole_Collapse/hdf5/",
+        default=".",
         help="Base directory to search for HDF5 files"
     )
     

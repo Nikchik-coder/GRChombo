@@ -94,7 +94,7 @@ def main():
     parser.add_argument(
         "--data_dir",
         type=str,
-        default="/home/nik/GRChombo/Examples/Wormhole_MT/simulation_output/hdf5/",
+        default=".",
         help="Path to the directory containing HDF5 plot files."
     )
     args = parser.parse_args()
