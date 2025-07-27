@@ -95,11 +95,20 @@ You are now inside the Docker container (`root@...` prompt).
     cd /my_project/Examples/Wormhole_MT/
     ```
 2.  **Compile the code:**
+    > **CRITICAL:** For stable simulations, you **must** compile with high optimization flags. Debug builds can be numerically unstable and produce incorrect results (like the infinite `weyl4` values you may have seen).
     ```bash
-    make all
+    # Clean previous builds and compile with high optimization
+    make clean && make all OPT=HIGH
     ```
-3.  **Set the output path:**
-    -   Install a text editor: `apt-get update && apt-get install -y nano`
+3.  **Find your executable name:**
+    > The `OPT=HIGH` command creates a specific executable. Use `ls` to find its exact name.
+    ```bash
+    ls *.ex
+    # Look for a name like: Main_Wormhole_collapse3d.Linux.64.mpicxx.gfortran.OPTHIGH.MPI.OPENMPCC.ex
+    ```
+
+4.  **Set the output path:**
+    -   Install a text editor if needed: `apt-get update && apt-get install -y nano`
     -   Open the parameter file: `nano params.txt`
     -   Find `output_path` and set it correctly.
         -   For a test run, you can leave it as `"simulation_output/"`.
@@ -109,8 +118,10 @@ You are now inside the Docker container (`root@...` prompt).
 **Step 4: Run and Detach**
 
 1.  **Launch the simulation:**
+    > Use the `OPTHIGH` executable you found in the previous step.
     ```bash
-    mpirun -np 8 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPT.MPI.OPENMPCC.ex params.txt
+    # Use the OPTHIGH executable for a stable run
+    mpirun -np 8 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPTHIGH.MPI.OPENMPCC.ex params.txt
     ```
 
     > **Note on Performance and CPU Configuration:**
@@ -127,18 +138,18 @@ You are now inside the Docker container (`root@...` prompt).
     > -   **Option 1: Pure MPI (High Communication)**
     >     One MPI process per vCPU. Simple, but can be slow due to communication overhead.
     >     ```bash
-    mpirun -np 60 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPT.MPI.OPENMPCC.ex params.txt
+    mpirun -np 60 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPTHIGH.MPI.OPENMPCC.ex params.txt
 
-    mpirun -np 60 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPT.MPI.OPENMPCC.ex params_cheap.txt
+    mpirun -np 60 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPTHIGH.MPI.OPENMPCC.ex params_cheap.txt
 
-    mpirun -np 30 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPT.MPI.OPENMPCC.ex params_cheap.txt
+    mpirun -np 30 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPTHIGH.MPI.OPENMPCC.ex params_cheap.txt
     >     ```
     > -   **Option 2: One MPI Rank per Physical Core**
     >     Reduces communication overhead but may leave some CPU resources idle.
     >     ```bash
-    mpirun -np 30 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPT.MPI.OPENMPCC.ex params.txt
+    mpirun -np 30 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPTHIGH.MPI.OPENMPCC.ex params.txt
 
-    mpirun -np 30 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPT.MPI.OPENMPCC.ex params_cheap.txt
+    mpirun -np 30 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPTHIGH.MPI.OPENMPCC.ex params_cheap.txt
     >     ```
     > -   **Option 3: Hybrid MPI + OpenMP (Recommended for Benchmarking)**
     >     Often the best balance. One MPI rank per physical core, with 2 OpenMP threads each to saturate the vCPUs.
@@ -147,7 +158,7 @@ You are now inside the Docker container (`root@...` prompt).
     >     export OMP_NUM_THREADS=2
     >
     >     # Then run with 30 MPI ranks (one for each physical core)
-    mpirun -np 30 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPT.MPI.OPENMPCC.ex params.txt
+    mpirun -np 30 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPTHIGH.MPI.OPENMPCC.ex params.txt
     >     ```
 
 2.  **Detach from the session:**
@@ -189,7 +200,7 @@ For production runs, you need a dedicated disk for your data.
     -   Start your VM again.
 2.  **Format and Mount Disk (on VM):**
     -   SSH into your VM.
-    -   Find your data disk's name with `lsblk`. It will be the large disk that is **not** mounted (e.g., `sda`, `sdb`). **Identify the correct device name for your data disk and use it in the following steps.** In the example `lsblk` output below, the OS is on `/dev/sdb` and the unformatted 100G data disk is `/dev/sda`.
+    -   Find your data disk's name with `lsblk`. It will be the large disk that is **not** mounted (e.g., `sdb`). **CRITICAL: The device name for your data disk (e.g., `/dev/sdb`, `/dev/sdc`) will likely be different from the OS disk (`/dev/sda`). You must identify the correct device and use it in all subsequent commands.** In the example `lsblk` output below, the OS is on `/dev/sdb` and the unformatted 100G data disk is `/dev/sda`. Your setup may be different.
         ```bash
         $ lsblk
         NAME    MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
@@ -199,16 +210,16 @@ For production runs, you need a dedicated disk for your data.
         ├─sdb14   8:30   0    3M  0 part 
         └─sdb15   8:31   0  124M  0 part /boot/efi
         ```
-    -   Format your data disk. **Use the device name you identified above.**
+    -   Format your data disk. **Use the device name you identified with `lsblk`.**
         ```bash
-        # Replace /dev/sda with your data disk's name
-        sudo mkfs.ext4 /dev/sda
+        # !! Replace /dev/sdX with your data disk's name (e.g., /dev/sdb) !!
+        sudo mkfs.ext4 /dev/sdX
         ```
     -   Create a mount point: `sudo mkdir -p /mnt/data`
     -   Mount it temporarily and set permissions:
         ```bash
-        # Replace /dev/sda with your data disk's name
-        sudo mount /dev/sda /mnt/data && sudo chmod 777 /mnt/data
+        # Replace /dev/sdX with your data disk's name
+        sudo mount /dev/sdX /mnt/data && sudo chmod 777 /mnt/data
         ```
 
     > **IMPORTANT:** This `mount` command is temporary and will not survive a VM reboot. If you start a simulation without making the mount permanent, all data will be written to the small primary disk of the VM, which can quickly fill up and cause the simulation and the VM to crash.
@@ -220,15 +231,15 @@ For production runs, you need a dedicated disk for your data.
         # Your output will now look something like this:
         Filesystem      Size  Used Avail Use% Mounted on
         ... (all the other lines) ...
-        /dev/sda        100G  60M   95G   1% /mnt/data
+        /dev/sdb        196G   28K  186G   1% /mnt/data
         ```
-        If you do not see your disk (`/dev/sda` in this example) listed and mounted on `/mnt/data`, something is wrong. Do not proceed until it is correctly mounted.
+        If you do not see your disk (e.g. `/dev/sdb`) listed and mounted on `/mnt/data`, something is wrong. Do not proceed until it is correctly mounted.
     -   **Make the Mount Permanent:**
         To ensure the disk is automatically mounted every time the VM starts, you must add it to the `/etc/fstab` file. This is the recommended way to do it:
         ```bash
         # This command finds the unique ID of your disk and adds it to the fstab file
-        # Make sure to replace /dev/sda with your data disk's name if it is different
-        echo "UUID=$(sudo blkid -s UUID -o value /dev/sda) /mnt/data ext4 defaults,nofail 0 2" | sudo tee -a /etc/fstab
+        # CRITICAL: Make sure to replace /dev/sdX with your data disk's name
+        echo "UUID=$(sudo blkid -s UUID -o value /dev/sdX) /mnt/data ext4 defaults,nofail 0 2" | sudo tee -a /etc/fstab
         ```
         This command makes the mount permanent and robust against reboots.
 
@@ -240,8 +251,8 @@ If your simulation starts running out of space, you can increase the size of you
 2.  **Resize the Filesystem (on VM):**
     This command tells the filesystem to grow to fill the new space on the disk. For `ext4` filesystems, this is safe to do while the disk is mounted and in use.
     ```bash
-    # Replace /dev/sda with your data disk's name if different
-    sudo resize2fs /dev/sda
+    # Replace /dev/sdX with your data disk's name if different
+    sudo resize2fs /dev/sdX
     ```
 3.  **Verify the New Size:**
     Run `df -h` again. You should now see the larger size reflected for your mounted disk.
@@ -283,8 +294,8 @@ If your simulation starts running out of space, you can increase the size of you
         2.  **Mount the Disk Correctly:**
             Properly mount the persistent disk to the mount point, then verify the mount was successful with `df -h`.
             ```bash
-            # Replace /dev/sda with your data disk's name
-            sudo mount /dev/sda /mnt/data
+            # Replace /dev/sdX with your data disk's name
+            sudo mount /dev/sdX /mnt/data
             ```
         3.  **Clean Up the Root Disk (Optional but Recommended):**
             The data written to the root disk is now "hidden" under the mount point, but it's still taking up space. To reclaim it:
@@ -297,8 +308,8 @@ If your simulation starts running out of space, you can increase the size of you
             sudo rm -rf /mnt/data/*
 
             # Re-mount the big disk
-            # Replace /dev/sda with your data disk's name
-            sudo mount /dev/sda /mnt/data
+            # Replace /dev/sdX with your data disk's name
+            sudo mount /dev/sdX /mnt/data
             ```
         4.  **Make the Mount Permanent:**
             Follow the instructions in **Step 3** above to add the disk to `/etc/fstab` to prevent this from happening again.

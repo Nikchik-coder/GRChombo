@@ -18,7 +18,7 @@ You only need to perform this setup once on your VM.
 3.  **Install the necessary system packages** for Python and virtual environments:
     ```bash
     sudo apt-get update
-    sudo apt-get install -y python3-pip python3-venv
+        
     ```
 
 4.  **Create a dedicated Python virtual environment**. This prevents conflicts with system packages.
@@ -48,7 +48,7 @@ With the environment set up, you can now run any of the Python plotting scripts.
 2.  **Run a plotting script**. As an example, let's use `plot_wormhole.py`. You must provide the path to your simulation data on the persistent disk (`/mnt/data/...`).
     ```bash
     # Replace wormhole_run_01 with the name of your simulation output folder
-    python plot_wormhole.py --data_dir /mnt/data/wormhole_run_cheap/hdf5/
+    python plot_wormhole.py --data_dir /mnt/data/wormhole_run_production/hdf5/
 
     python plot_wormhole.py --data_dir /mnt/data/wormhole_run_cheap/hdf5/
 
@@ -88,9 +88,9 @@ Since the VM does not have a graphical user interface, you must copy the generat
 
     For example, a complete, working command would look like this:
     ```bash
-    gcloud compute scp --recurse instance-20250726-070656:/home/nikita_dash_sh1rokov/GRChombo/Animation/plots_chi . --zone=us-central1-c
+    gcloud compute scp --recurse instance-20250727-072850:/home/nikita_dash_sh1rokov/GRChombo/Animation/plots_chi . --zone=us-central1-c
 
-    gcloud compute scp --recurse instance-20250726-070656:/home/nikita_dash_sh1rokov/GRChombo/Animation/GRChombo_animations . --zone=us-central1-c
+    gcloud compute scp --recurse instance-20250727-072850:/home/nikita_dash_sh1rokov/GRChombo/Animation/GRChombo_animations . --zone=us-central1-c
     ```
 
 3.  A new folder named `plots_chi` will now be on your local computer, containing all the generated images. You can repeat this `scp` command for any other plot directories you want to view.
@@ -149,3 +149,31 @@ If your simulation extracted Weyl4 data, you can analyze and plot it.
     python plot_gravitational_waves.py --data_dir /mnt/data/wormhole_run_01/data
     ```
     This script will create a new directory named `gw_plots/` containing several images of the gravitational wave signal analysis. It will also save processed data (like the calculated strain) into `gw_plots/processed_data/`.
+
+## Step 5: Download Raw Simulation Data
+
+Sometimes you may want to download the raw simulation output to your local machine for other types of analysis or for backup. This includes the HDF5 plot files or specific data files like `Weyl4_*.dat`.
+
+The process is the same as copying plot images, using `gcloud compute scp`.
+
+1.  **Open a new terminal on your LOCAL computer**.
+
+2.  **Use the `gcloud compute scp` command** with the `--recurse` flag to copy the entire data directory.
+
+    For example, to download the `Weyl4` data from the `wormhole_run_production` simulation, located at `/mnt/data/wormhole_run_production/data`, you would run:
+    ```bash
+    # Replace with your actual instance name and zone
+    gcloud compute scp --recurse YOUR_INSTANCE_NAME:/mnt/data/wormhole_run_production/data . --zone=YOUR_VM_ZONE
+    ```
+
+    A complete, working command would look like this:
+    ```bash
+    gcloud compute scp --recurse instance-20250727-072850:/mnt/data/wormhole_run_production/data . --zone=us-central1-c
+    ```
+
+    Similarly, to download the entire HDF5 output:
+    ```bash
+    gcloud compute scp --recurse instance-20250727-072850:/mnt/data/wormhole_run_production/hdf5 . --zone=us-central1-c
+    ```
+
+3.  This will create a new folder (e.g., `data` or `hdf5`) in your current local directory containing the simulation output.
