@@ -130,6 +130,8 @@ You are now inside the Docker container (`root@...` prompt).
     mpirun -np 60 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPT.MPI.OPENMPCC.ex params.txt
 
     mpirun -np 60 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPT.MPI.OPENMPCC.ex params_cheap.txt
+
+    mpirun -np 30 --allow-run-as-root --oversubscribe ./Main_Wormhole_collapse3d_ch.Linux.64.mpicxx.gfortran.OPT.MPI.OPENMPCC.ex params_cheap.txt
     >     ```
     > -   **Option 2: One MPI Rank per Physical Core**
     >     Reduces communication overhead but may leave some CPU resources idle.
