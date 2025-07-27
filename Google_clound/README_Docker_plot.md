@@ -56,8 +56,7 @@ With the environment set up, you can now run any of the Python plotting scripts.
 
     python plot_wormhole.py --data_dir /mnt/data/wormhole_run_high_res/hdf5/
 
-
-
+    python3 plot_hamiltonian.py animate --base_dir /mnt/data/wormhole_run_production/hdf5/
 
     ```
 
@@ -89,6 +88,8 @@ Since the VM does not have a graphical user interface, you must copy the generat
     For example, a complete, working command would look like this:
     ```bash
     gcloud compute scp --recurse instance-20250727-072850:/home/nikita_dash_sh1rokov/GRChombo/Animation/plots_chi . --zone=us-central1-c
+
+    gcloud compute scp --recurse instance-20250727-072850:/home/nikita_dash_sh1rokov/GRChombo/Animation/hamiltonian_plots . --zone=us-central1-c
 
     gcloud compute scp --recurse instance-20250727-072850:/home/nikita_dash_sh1rokov/GRChombo/Animation/GRChombo_animations . --zone=us-central1-c
     ```
@@ -170,6 +171,8 @@ The process is the same as copying plot images, using `gcloud compute scp`.
     ```bash
     gcloud compute scp --recurse instance-20250727-072850:/mnt/data/wormhole_run_production/data . --zone=us-central1-c
     ```
+    gcloud compute scp --recurse instance-20250727-072850:/mnt/data/wormhole_run_production/hamiltonian_plots . --zone=us-central1-c
+
 
     Similarly, to download the entire HDF5 output:
     ```bash
