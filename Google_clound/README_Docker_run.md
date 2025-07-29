@@ -318,3 +318,45 @@ If your simulation starts running out of space, you can increase the size of you
 -   **Problem:** `docker pull` fails with `permission denied`.
     -   **Cause:** Your shell session hasn't recognized that you were added to the `docker` group.
     -   **Solution:** Log out of the VM and log back in.
+
+-   **Problem:** The main VM disk (`/dev/sda1`) is full, but `docker system prune` doesn't free up much space.
+    -   **Cause:** A running or recently stopped Docker container has generated a very large log file. These logs are not always cleaned up by the `prune` command.
+    -   **Solution: Manually Clear Logs and Configure Log Rotation**
+        1.  **Find the Large File:**
+            First, confirm that a Docker log file is the culprit. Run this command to find the largest files on your system.
+            ```bash
+            sudo du -ah / | sort -hr | head -n 20
+            ```
+            Look for a very large file located in `/var/lib/docker/containers/...` that ends in `-json.log`.
+
+        2.  **Safely Empty the Log File:**
+            Instead of deleting the file (which can be unsafe), truncate it to zero bytes. This clears the contents without removing the file itself.
+            ```bash
+            # NOTE: The container ID below is an example from a real session.
+            # You must replace it with the specific ID you found with the 'du' command.
+            sudo truncate -s 0 /var/lib/docker/containers/462e3ce96fb433bfdb05368bb097c9cae9250bdbe55cd61503f9810f8e31d2fb/462e3ce96fb433bfdb05368bb097c9cae9250bdbe55cd61503f9810f8e31d2fb-json.log
+            ```
+            Run `df -h` again to confirm that the space has been freed.
+
+        3.  **Prevent This Permanently (Recommended):**
+            To stop this from happening again, configure the Docker daemon to automatically rotate and limit log files for all future containers.
+            -   Create or edit the Docker daemon configuration file:
+                ```bash
+                sudo nano /etc/docker/daemon.json
+                ```
+            -   Add the following content to the file. This tells Docker to limit log files to 3 per container, with a maximum size of 10MB each.
+                ```json
+                {
+                  "log-driver": "json-file",
+                  "log-opts": {
+                    "max-size": "10m",
+                    "max-file": "3"
+                  }
+                }
+                ```
+            -   Save the file (`Ctrl+X`, `Y`, `Enter`).
+            -   Restart the Docker daemon for the changes to take effect.
+                ```bash
+                sudo systemctl restart docker
+                ```
+            All new containers you create will now have their logs automatically managed.

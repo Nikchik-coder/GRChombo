@@ -6,6 +6,7 @@ import yt
 import os
 import matplotlib
 import argparse
+from mpi4py import MPI
 
 # =========================================================================
 # --- Configuration ---
@@ -89,6 +90,11 @@ def main():
     # Use a non-interactive backend suitable for saving files
     matplotlib.use("Agg")
 
+    # Initialize MPI
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank()
+    size = comm.Get_size()
+
     # Set up command-line argument parsing
     parser = argparse.ArgumentParser(description="Plot 2D slices from GRChombo HDF5 files.")
     parser.add_argument(
@@ -105,25 +111,37 @@ def main():
     # Load the dataset series. In serial mode, this creates a list of all files.
     try:
         ts = yt.load(data_path_pattern)
-        print(f"Found {len(ts)} HDF5 files to process in '{data_path_pattern}'")
+        if rank == 0:
+            print(f"Found {len(ts)} HDF5 files to process in '{data_path_pattern}'")
     except Exception as e:
-        print(f"ERROR: Could not load data from pattern '{data_path_pattern}'")
-        print(f"Please check that the path is correct and files exist. Details: {e}")
+        if rank == 0:
+            print(f"ERROR: Could not load data from pattern '{data_path_pattern}'")
+            print(f"Please check that the path is correct and files exist. Details: {e}")
         return
 
-    # The main serial loop. This will iterate through each file one by one.
-    for i, ds in enumerate(ts):
-        print(f"\n--- Processing file {i+1} of {len(ts)} (t = {ds.current_time:.3f}) ---")
+    # Distribute the files across the MPI processes
+    files_to_process = ts[rank::size]
+
+    if len(files_to_process) > 0:
+        print(f"[Process {rank}] will process {len(files_to_process)} files.")
+
+    # The main parallel loop. Each process iterates through its assigned files.
+    for i, ds in enumerate(files_to_process):
+        print(f"[Process {rank}] --- Processing file {i+1} of {len(files_to_process)} (t = {ds.current_time:.3f}) ---")
         # Loop through the list of variables we want to plot
         for var_name in VARIABLES_TO_PLOT:
             try:
                 produce_slice_plot(ds, var_name)
             except Exception as e:
-                print(f"  ! FAILED to plot '{var_name}': {e}")
+                print(f"[Process {rank}]   ! FAILED to plot '{var_name}': {e}")
 
-    print("\n===================================")
-    print("All plotting tasks complete.")
-    print("===================================")
+    # Wait for all processes to finish before printing the final message
+    comm.Barrier()
+
+    if rank == 0:
+        print("\n===================================")
+        print("All plotting tasks complete.")
+        print("===================================")
 
 # This ensures the main function is called when the script is executed
 if __name__ == "__main__":

@@ -14,7 +14,7 @@ from scipy.integrate import cumulative_trapezoid
 
 # NEW: CHOOSE WHICH RADIUS TO PLOT FROM THE DATA FILE
 # Your file contains data for R=1.0 and R=5.0
-radius_to_plot = 20.0  # <-- CHANGE THIS VALUE to 1.0 or 5.0
+radius_to_plot = 5.0  # <-- CHANGE THIS VALUE to 1.0 or 5.0
 
 M = 1.0
 mode = "22"
@@ -39,7 +39,7 @@ except Exception as e:
 print(f"Selecting data columns for radius R = {radius_to_plot}")
 time_simulation = psi4_data[:, 0]
 
-if radius_to_plot == 20.0:
+if radius_to_plot == 10.0:
     re_psi4 = psi4_data[:, 1]  # Column 1 is Re(Psi4) for R=1.0
     im_psi4 = psi4_data[:, 2]  # Column 2 is Im(Psi4) for R=1.0
 elif radius_to_plot == 5.0:

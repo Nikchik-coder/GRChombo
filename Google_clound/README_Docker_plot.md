@@ -50,6 +50,8 @@ With the environment set up, you can now run any of the Python plotting scripts.
     # Replace wormhole_run_01 with the name of your simulation output folder
     python plot_wormhole.py --data_dir /mnt/data/wormhole_run_production/hdf5/
 
+    mpirun -np 4 python Animation/plot_wormhole.py --data_dir /mnt/data/wormhole_run_production/hdf5/
+
     python plot_wormhole.py --data_dir /mnt/data/wormhole_run_cheap/hdf5/
 
     python create_animation.py all

@@ -1,0 +1,21 @@
+GRChombo Animation Creation Report
+==================================
+
+Creation Date: 2025-07-28 06:22:49
+Simulation Type: GRChombo
+Working Directory: /home/nikita_dash_sh1rokov/GRChombo/Animation
+Output Directory: /home/nikita_dash_sh1rokov/GRChombo/Animation/GRChombo_animations/run_20250728_062236
+
+Animation Summary:
+Total Animations Created: 7
+Fields Animated: hamiltonian_plots, plots_Ham, plots_K, plots_Weyl4_Im, plots_Weyl4_Re, plots_chi, plots_lapse
+Source PNG files remain in their original directories
+
+Individual Animations:
+  - animation_hamiltonian_plots_GRChombo.gif (0.5 MB)
+  - animation_plots_Ham_GRChombo.gif (2.6 MB)
+  - animation_plots_K_GRChombo.gif (3.1 MB)
+  - animation_plots_Weyl4_Im_GRChombo.gif (4.3 MB)
+  - animation_plots_Weyl4_Re_GRChombo.gif (4.1 MB)
+  - animation_plots_chi_GRChombo.gif (0.7 MB)
+  - animation_plots_lapse_GRChombo.gif (1.3 MB)
